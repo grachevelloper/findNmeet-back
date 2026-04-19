@@ -1,0 +1,38 @@
+{
+  "name": "search-orchestrator",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start:prod": "node dist/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@findnmeet/types": "workspace:*",
+    "@findnmeet/utils": "workspace:*",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "@types/supertest": "^7.0.0",
+    "jest": "^30.0.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.3"
+  },
+  "jest": {
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+    "moduleNameMapper": {
+      "^@findnmeet/types$": "<rootDir>/../../../packages/types/src",
+      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src"
+    },
+    "testEnvironment": "node"
+  }
+}
