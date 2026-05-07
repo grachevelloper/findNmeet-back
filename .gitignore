@@ -1,9 +1,14 @@
 node_modules
-dist
+**dist
 .env
 *.log
 coverage
 .DS_Store
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts
+**/src/**/*.d.ts.map
+packages/ts-types/.gen/
 
 # Go
 services/vk-gateway/bin/

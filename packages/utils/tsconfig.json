@@ -1,12 +1,12 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
+    "outDir": "../ts-utils/dist",
+    "rootDir": "../ts-utils/src",
     "paths": {
       "@findnmeet/types": ["../types/src"]
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["../ts-utils/src"],
+  "exclude": ["../ts-utils/node_modules", "../ts-utils/dist"]
 }

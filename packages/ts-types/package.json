@@ -1,0 +1,60 @@
+{
+  "name": "@findnmeet/types",
+  "version": "0.0.1",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./shared/v1": {
+      "types": "./dist/src/shared/v1.d.ts",
+      "default": "./dist/src/shared/v1.js"
+    },
+    "./vk/v1": {
+      "types": "./dist/src/vk/v1.d.ts",
+      "default": "./dist/src/vk/v1.js"
+    },
+    "./auth/v1": {
+      "types": "./dist/src/auth/v1.d.ts",
+      "default": "./dist/src/auth/v1.js"
+    },
+    "./search/v1": {
+      "types": "./dist/src/search/v1.d.ts",
+      "default": "./dist/src/search/v1.js"
+    },
+    "./favorites/v1": {
+      "types": "./dist/src/favorites/v1.d.ts",
+      "default": "./dist/src/favorites/v1.js"
+    },
+    "./ai/v1": {
+      "types": "./dist/src/ai/v1.d.ts",
+      "default": "./dist/src/ai/v1.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "shared/v1": ["dist/src/shared/v1.d.ts"],
+      "vk/v1": ["dist/src/vk/v1.d.ts"],
+      "auth/v1": ["dist/src/auth/v1.d.ts"],
+      "search/v1": ["dist/src/search/v1.d.ts"],
+      "favorites/v1": ["dist/src/favorites/v1.d.ts"],
+      "ai/v1": ["dist/src/ai/v1.d.ts"],
+      "*": ["dist/*"]
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf .gen dist",
+    "generate": "pnpm --dir ../.. exec buf generate",
+    "prebuild": "pnpm run clean && pnpm run generate",
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.12.0"
+  }
+}

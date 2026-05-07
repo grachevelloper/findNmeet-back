@@ -80,8 +80,10 @@ api-gateway
 ### Избранное
 
 ```
-Клиент → POST /favorites/:profileId (api-gateway)
-       → favorites-service :3003 (CRUD в PostgreSQL)
+Клиент → POST /api/v1/favorites (api-gateway)
+       → favorites-service :3003
+       → vk-gateway :8080 [обогащение VK snapshot через users.get]
+       → PostgreSQL
 ```
 
 ---
@@ -91,12 +93,28 @@ api-gateway
 ### PostgreSQL
 
 **`users`** — идентификация, обновляются редко:
-| Поле        | Тип           |
-|-------------|---------------|
-| id          | UUID PK       |
-| vk_id       | BIGINT UNIQUE |
-| created_at  | TIMESTAMPTZ   |
-| last_active | TIMESTAMPTZ   |
+| Поле           | Тип         |
+|----------------|-------------|
+| id             | UUID PK     |
+| display_name   | TEXT        |
+| avatar_url     | TEXT NULL   |
+| created_at     | TIMESTAMPTZ |
+| updated_at     | TIMESTAMPTZ |
+| last_active_at | TIMESTAMPTZ |
+| is_active      | BOOLEAN     |
+
+**`user_external_links`** — внешние идентичности пользователя:
+| Поле          | Тип         |
+|---------------|-------------|
+| id            | UUID PK     |
+| user_id       | UUID FK → users |
+| provider      | TEXT        |
+| external_id   | TEXT        |
+| provider_meta | JSONB       |
+| linked_at     | TIMESTAMPTZ |
+| updated_at    | TIMESTAMPTZ |
+
+UNIQUE: `(provider, external_id)`
 
 **`user_settings`** — пользовательские настройки:
 | Поле         | Тип              |
@@ -104,34 +122,61 @@ api-gateway
 | user_id      | UUID PK FK → users |
 | vision_limit | INTEGER (def 20) |
 
-**`vk_tokens`** — обновляется при каждом refresh VK токена:
-| Поле          | Тип         |
-|---------------|-------------|
-| id            | UUID PK     |
-| user_id       | UUID FK → users |
-| access_token  | TEXT (зашифрован) |
-| refresh_token | TEXT (зашифрован) |
-| expires_at    | TIMESTAMPTZ |
-| updated_at    | TIMESTAMPTZ |
-
-**`auth_tokens`** — refresh токены нашего сервиса:
-| Поле       | Тип         |
-|------------|-------------|
-| id         | UUID PK     |
-| user_id    | UUID FK → users |
-| token_hash | TEXT        |
-| expires_at | TIMESTAMPTZ |
-| created_at | TIMESTAMPTZ |
+**`auth_tokens`** — provider-токены, привязанные к конкретной внешней идентичности:
+| Поле                     | Тип         |
+|--------------------------|-------------|
+| id                       | UUID PK     |
+| external_link_id         | UUID FK → user_external_links |
+| access_token_ciphertext  | TEXT        |
+| refresh_token_ciphertext | TEXT NULL   |
+| encryption_key_id        | TEXT        |
+| expires_at               | TIMESTAMPTZ |
+| created_at               | TIMESTAMPTZ |
+| updated_at               | TIMESTAMPTZ |
+| last_used_at             | TIMESTAMPTZ |
+| revoked_at               | TIMESTAMPTZ NULL |
 
 **`favorites`** — избранные профили:
-| Поле             | Тип         |
-|------------------|-------------|
-| user_id          | UUID FK → users |
-| vk_profile_id    | BIGINT      |
-| profile_snapshot | JSONB       |
-| created_at       | TIMESTAMPTZ |
+| Поле              | Тип         |
+|-------------------|-------------|
+| id                | UUID PK     |
+| user_id           | UUID FK → users |
+| provider          | TEXT        |
+| external_id       | TEXT        |
+| display_title     | TEXT        |
+| display_image_url | TEXT NULL   |
+| note              | TEXT NULL   |
+| added_at          | TIMESTAMPTZ |
+| updated_at        | TIMESTAMPTZ |
 
-PK: `(user_id, vk_profile_id)`
+UNIQUE: `(user_id, provider, external_id)`
+
+**`vk_favorite_profiles`** — VK-specific snapshot избранного человека:
+| Поле                       | Тип         |
+|----------------------------|-------------|
+| favorite_id                | UUID PK FK → favorites |
+| vk_user_id                 | BIGINT      |
+| first_name                 | TEXT        |
+| last_name                  | TEXT        |
+| screen_name                | TEXT NULL   |
+| photo_url                  | TEXT NULL   |
+| city_id                    | INTEGER NULL |
+| city_title_snapshot        | TEXT NULL   |
+| country_id                 | INTEGER NULL |
+| country_title_snapshot     | TEXT NULL   |
+| home_town                  | TEXT NULL   |
+| university_id              | INTEGER NULL |
+| university_title_snapshot  | TEXT NULL   |
+| faculty_id                 | INTEGER NULL |
+| faculty_title_snapshot     | TEXT NULL   |
+| graduation_year            | SMALLINT NULL |
+| bdate_raw                  | TEXT NULL   |
+| age_snapshot               | SMALLINT NULL |
+| online_snapshot            | BOOLEAN     |
+| last_seen_at               | TIMESTAMPTZ NULL |
+| relation                   | TEXT        |
+| is_closed                  | BOOLEAN     |
+| snapshot_updated_at        | TIMESTAMPTZ |
 
 ### Redis
 

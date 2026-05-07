@@ -22,12 +22,12 @@
   .env.example                ← создать
   docker-compose.yml          ← создать (postgres + redis)
 
-/packages/types/
+/packages/ts-types/
   package.json
   tsconfig.json
   src/index.ts                ← ServiceHealthResponse
 
-/packages/utils/
+/packages/ts-utils/
   package.json
   tsconfig.json
   src/index.ts                ← buildHealthResponse()
@@ -174,8 +174,8 @@ services/vk-gateway/bin/
 - [ ] **Step 7: Создать структуру директорий**
 
 ```bash
-mkdir -p packages/types/src
-mkdir -p packages/utils/src
+mkdir -p packages/ts-types/src
+mkdir -p packages/ts-utils/src
 mkdir -p services/api-gateway/src/health
 mkdir -p services/auth-service/src/health
 mkdir -p services/search-orchestrator/src
@@ -189,11 +189,11 @@ mkdir -p services/vk-gateway/cmd/server
 ## Task 2: Создать shared пакет `@findnmeet/types`
 
 **Files:**
-- Create: `packages/types/package.json`
-- Create: `packages/types/tsconfig.json`
-- Create: `packages/types/src/index.ts`
+- Create: `packages/ts-types/package.json`
+- Create: `packages/ts-types/tsconfig.json`
+- Create: `packages/ts-types/src/index.ts`
 
-- [ ] **Step 1: Создать `packages/types/package.json`**
+- [ ] **Step 1: Создать `packages/ts-types/package.json`**
 
 ```json
 {
@@ -211,7 +211,7 @@ mkdir -p services/vk-gateway/cmd/server
 }
 ```
 
-- [ ] **Step 2: Создать `packages/types/tsconfig.json`**
+- [ ] **Step 2: Создать `packages/ts-types/tsconfig.json`**
 
 ```json
 {
@@ -225,7 +225,7 @@ mkdir -p services/vk-gateway/cmd/server
 }
 ```
 
-- [ ] **Step 3: Создать `packages/types/src/index.ts`**
+- [ ] **Step 3: Создать `packages/ts-types/src/index.ts`**
 
 ```typescript
 export interface ServiceHealthResponse {
@@ -239,11 +239,11 @@ export interface ServiceHealthResponse {
 ## Task 3: Создать shared пакет `@findnmeet/utils`
 
 **Files:**
-- Create: `packages/utils/package.json`
-- Create: `packages/utils/tsconfig.json`
-- Create: `packages/utils/src/index.ts`
+- Create: `packages/ts-utils/package.json`
+- Create: `packages/ts-utils/tsconfig.json`
+- Create: `packages/ts-utils/src/index.ts`
 
-- [ ] **Step 1: Создать `packages/utils/package.json`**
+- [ ] **Step 1: Создать `packages/ts-utils/package.json`**
 
 ```json
 {
@@ -264,7 +264,7 @@ export interface ServiceHealthResponse {
 }
 ```
 
-- [ ] **Step 2: Создать `packages/utils/tsconfig.json`**
+- [ ] **Step 2: Создать `packages/ts-utils/tsconfig.json`**
 
 ```json
 {
@@ -281,7 +281,7 @@ export interface ServiceHealthResponse {
 }
 ```
 
-- [ ] **Step 3: Создать `packages/utils/src/index.ts`**
+- [ ] **Step 3: Создать `packages/ts-utils/src/index.ts`**
 
 ```typescript
 import { ServiceHealthResponse } from '@findnmeet/types';
@@ -320,8 +320,8 @@ export function buildHealthResponse(service: string): ServiceHealthResponse {
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
-    "@findnmeet/utils": "workspace:*",
+    "@findnmeet/ts-types": "workspace:*",
+    "@findnmeet/ts-utils": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
@@ -377,8 +377,8 @@ export function buildHealthResponse(service: string): ServiceHealthResponse {
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/types": ["../../packages/ts-types/src"],
+      "@findnmeet/utils": ["../../packages/ts-utils/src"]
     }
   },
   "include": ["src/**/*"],
@@ -528,8 +528,8 @@ git commit -m "feat: scaffold api-gateway and shared packages"
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
-    "@findnmeet/utils": "workspace:*",
+    "@findnmeet/ts-types": "workspace:*",
+    "@findnmeet/ts-utils": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
@@ -585,8 +585,8 @@ git commit -m "feat: scaffold api-gateway and shared packages"
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/types": ["../../packages/ts-types/src"],
+      "@findnmeet/utils": ["../../packages/ts-utils/src"]
     }
   },
   "include": ["src/**/*"],
@@ -734,8 +734,8 @@ git commit -m "feat: scaffold auth-service"
     "test": "jest"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
-    "@findnmeet/utils": "workspace:*",
+    "@findnmeet/ts-types": "workspace:*",
+    "@findnmeet/ts-utils": "workspace:*",
     "express": "^4.18.2"
   },
   "devDependencies": {
@@ -768,8 +768,8 @@ git commit -m "feat: scaffold auth-service"
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/types": ["../../packages/ts-types/src"],
+      "@findnmeet/utils": ["../../packages/ts-utils/src"]
     }
   },
   "include": ["src"],
@@ -854,8 +854,8 @@ PASS src/app.spec.ts
     "test": "jest"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
-    "@findnmeet/utils": "workspace:*",
+    "@findnmeet/ts-types": "workspace:*",
+    "@findnmeet/ts-utils": "workspace:*",
     "express": "^4.18.2"
   },
   "devDependencies": {
@@ -888,8 +888,8 @@ PASS src/app.spec.ts
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/types": ["../../packages/ts-types/src"],
+      "@findnmeet/utils": ["../../packages/ts-utils/src"]
     }
   },
   "include": ["src"],
@@ -966,8 +966,8 @@ PASS src/app.spec.ts
     "test": "jest"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
-    "@findnmeet/utils": "workspace:*",
+    "@findnmeet/ts-types": "workspace:*",
+    "@findnmeet/ts-utils": "workspace:*",
     "express": "^4.18.2"
   },
   "devDependencies": {
@@ -1000,8 +1000,8 @@ PASS src/app.spec.ts
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/types": ["../../packages/ts-types/src"],
+      "@findnmeet/utils": ["../../packages/ts-utils/src"]
     }
   },
   "include": ["src"],
