@@ -10,5 +10,9 @@
     "dev:ai": "pnpm --filter ai-service dev",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.69.0",
+    "@bufbuild/protoc-gen-es": "^2.12.0"
   }
 }
