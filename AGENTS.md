@@ -208,7 +208,7 @@ The package expects generated files under `packages/ts-types/.gen/*` and has scr
 - `prebuild`: clean plus generate
 - `build`: `tsc`
 
-Current note: no `.proto`, `buf.yaml`, or `buf.gen.yaml` files are present in the checked workspace, but `packages/ts-types` references generated protobuf outputs.
+Proto sources live under `contracts/proto/*/v1`, and `buf.gen.yaml` generates TypeScript files into `packages/ts-types/.gen`.
 
 ### `packages/utils`
 
@@ -301,7 +301,6 @@ Implemented:
 Planned or partially wired:
 
 - API Gateway as public HTTP entry point.
-- Internal service-to-service contracts generated from protobuf.
 - VK OAuth and profile integration.
 - Persistence for auth and favorites.
 - Search orchestration.
@@ -313,5 +312,3 @@ Known inconsistencies to resolve:
 - Several services depend on `@findnmeet/types`, but mappings differ between `packages/types` and `packages/ts-types`.
 - `packages/utils/tsconfig.json` references `../ts-utils`, which is not a workspace package directory.
 - `api-gateway/src/main.ts` starts a TCP microservice but does not call `listen()` and does not match the HTTP health check used by tests.
-- `packages/ts-types` expects generated protobuf files, but proto/buf configuration files are not present in the current workspace snapshot.
-

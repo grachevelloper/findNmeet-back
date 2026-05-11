@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "auth/v1/models.proto";
+import "shared/v1/common_types.proto";
+
+service AuthService {
+  rpc CompleteVkOAuth(CompleteVkOAuthRequest) returns (CompleteVkOAuthResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetExternalLinks(GetExternalLinksRequest) returns (GetExternalLinksResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc RevokeSession(RevokeSessionRequest) returns (RevokeSessionResponse);
+}
+
+message CompleteVkOAuthRequest {
+  string code = 1;
+  string state = 2;
+  string redirect_uri = 3;
+}
+
+message CompleteVkOAuthResponse {
+  AuthenticatedUser user = 1;
+  Session session = 2;
+  bool is_new_user = 3;
+}
+
+message GetUserRequest {
+  .shared.v1.Uuid user_id = 1;
+}
+
+message GetUserResponse {
+  AuthenticatedUser user = 1;
+}
+
+message GetExternalLinksRequest {
+  .shared.v1.Uuid user_id = 1;
+}
+
+message GetExternalLinksResponse {
+  repeated UserExternalLink external_links = 1;
+}
+
+message RefreshSessionRequest {
+  string refresh_token = 1;
+}
+
+message RefreshSessionResponse {
+  Session session = 1;
+}
+
+message RevokeSessionRequest {
+  string refresh_token = 1;
+}
+
+message RevokeSessionResponse {}

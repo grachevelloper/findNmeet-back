@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package favorites.v1;
+
+import "favorites/v1/models.proto";
+import "google/protobuf/field_mask.proto";
+import "shared/v1/common_types.proto";
+
+service FavoritesService {
+  rpc CreateFavorite(CreateFavoriteRequest) returns (CreateFavoriteResponse);
+  rpc GetFavorite(GetFavoriteRequest) returns (GetFavoriteResponse);
+  rpc ListFavorites(ListFavoritesRequest) returns (ListFavoritesResponse);
+  rpc UpdateFavorite(UpdateFavoriteRequest) returns (UpdateFavoriteResponse);
+  rpc DeleteFavorite(DeleteFavoriteRequest) returns (DeleteFavoriteResponse);
+  rpc RefreshFavorite(RefreshFavoriteRequest) returns (RefreshFavoriteResponse);
+}
+
+message CreateFavoriteRequest {
+  .shared.v1.Uuid user_id = 1;
+  .shared.v1.Provider provider = 2;
+  string external_id = 3;
+  string note = 4;
+}
+
+message CreateFavoriteResponse {
+  Favorite favorite = 1;
+}
+
+message GetFavoriteRequest {
+  .shared.v1.Uuid user_id = 1;
+  .shared.v1.Uuid favorite_id = 2;
+}
+
+message GetFavoriteResponse {
+  Favorite favorite = 1;
+}
+
+message ListFavoritesRequest {
+  .shared.v1.Uuid user_id = 1;
+  .shared.v1.Provider provider = 2;
+  .shared.v1.PageRequest page = 3;
+}
+
+message ListFavoritesResponse {
+  repeated Favorite favorites = 1;
+  .shared.v1.PageResponse page = 2;
+}
+
+message UpdateFavoriteRequest {
+  .shared.v1.Uuid user_id = 1;
+  Favorite favorite = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateFavoriteResponse {
+  Favorite favorite = 1;
+}
+
+message DeleteFavoriteRequest {
+  .shared.v1.Uuid user_id = 1;
+  .shared.v1.Uuid favorite_id = 2;
+}
+
+message DeleteFavoriteResponse {}
+
+message RefreshFavoriteRequest {
+  .shared.v1.Uuid user_id = 1;
+  .shared.v1.Uuid favorite_id = 2;
+}
+
+message RefreshFavoriteResponse {
+  Favorite favorite = 1;
+}

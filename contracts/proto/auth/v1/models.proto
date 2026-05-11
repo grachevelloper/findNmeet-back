@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "shared/v1/common_types.proto";
+
+message User {
+  .shared.v1.Uuid id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  google.protobuf.Timestamp last_active_at = 4;
+  bool is_active = 5;
+}
+
+message UserExternalLink {
+  .shared.v1.Uuid id = 1;
+  .shared.v1.Uuid user_id = 2;
+  .shared.v1.Provider provider = 3;
+  string external_id = 4;
+  google.protobuf.Struct provider_meta = 5;
+  google.protobuf.Timestamp linked_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message AuthToken {
+  .shared.v1.Uuid id = 1;
+  .shared.v1.Uuid external_link_id = 2;
+  string access_token_ciphertext = 3;
+  string refresh_token_ciphertext = 4;
+  string encryption_key_id = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  google.protobuf.Timestamp last_used_at = 9;
+  google.protobuf.Timestamp revoked_at = 10;
+}
+
+message AuthenticatedUser {
+  User user = 1;
+  repeated UserExternalLink external_links = 2;
+}
+
+message Session {
+  string access_token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
