@@ -1,25 +1,34 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { timestampDate } from '@bufbuild/protobuf/wkt';
+import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
+import { Provider } from '@findnmeet/ts-types/shared/v1';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
+import { FavoritesController } from '../src/favorites/favorites.controller';
+import { FavoritesRepository } from '../src/favorites/favorites.repository';
+import type { FavoriteRecord } from '../src/favorites/favorites.repository';
 import { FavoritesService } from '../src/favorites/favorites.service';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('FavoritesController', () => {
   let app: INestApplication;
-  let favoritesService: FavoritesService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [FavoritesController],
+      providers: [
+        FavoritesService,
+        {
+          provide: FavoritesRepository,
+          useValue: createRepositoryFake(),
+        },
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
-    favoritesService = moduleRef.get(FavoritesService);
-    favoritesService.clear();
   });
 
   afterEach(async () => {
@@ -127,3 +136,34 @@ describe('FavoritesController', () => {
     expect(res.body.error.code).toBe('missing_user_context');
   });
 });
+
+function createRepositoryFake(): FavoritesRepository {
+  const favorites = new Map<string, FavoriteRecord>();
+
+  return {
+    async findById(favoriteId: string) {
+      return favorites.get(favoriteId);
+    },
+    async findDuplicateFavoriteId(userId: string, provider: Provider, externalId: string) {
+      return [...favorites.values()].find(
+        (favorite) =>
+          favorite.userId?.value === userId && favorite.provider === provider && favorite.externalId === externalId,
+      )?.id?.value;
+    },
+    async listByOwner(userId: string, provider?: Provider) {
+      return [...favorites.values()]
+        .filter((favorite) => favorite.userId?.value === userId)
+        .filter((favorite) => provider === undefined || favorite.provider === provider)
+        .sort((a, b) => b.sortKey - a.sortKey);
+    },
+    async save(favorite: Favorite) {
+      favorites.set(favorite.id!.value, {
+        ...favorite,
+        sortKey: timestampDate(favorite.addedAt!).getTime(),
+      });
+    },
+    async delete(favorite: Favorite) {
+      favorites.delete(favorite.id!.value);
+    },
+  } as FavoritesRepository;
+}

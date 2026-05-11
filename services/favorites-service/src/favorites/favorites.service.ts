@@ -51,11 +51,11 @@ import { FavoritesRepository } from './favorites.repository';
 export class FavoritesService {
   constructor(private readonly favoritesRepository: FavoritesRepository) {}
 
-  createFavorite(request: CreateFavoriteRequest): CreateFavoriteResponse {
+  async createFavorite(request: CreateFavoriteRequest): Promise<CreateFavoriteResponse> {
     const userId = requireUuid(request.userId, 'user_id');
     const provider = requireProvider(request.provider);
     const externalId = requireExternalId(request.externalId, 'external_id');
-    const existingId = this.favoritesRepository.findDuplicateFavoriteId(userId.value, provider, externalId);
+    const existingId = await this.favoritesRepository.findDuplicateFavoriteId(userId.value, provider, externalId);
 
     if (existingId) {
       throw favoriteExists();
@@ -71,22 +71,22 @@ export class FavoritesService {
       now,
     });
 
-    this.favoritesRepository.save(favorite, now.getTime());
+    await this.favoritesRepository.save(favorite);
 
     return create(CreateFavoriteResponseSchema, { favorite });
   }
 
-  getFavorite(request: GetFavoriteRequest): GetFavoriteResponse {
-    const favorite = this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async getFavorite(request: GetFavoriteRequest): Promise<GetFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
     return create(GetFavoriteResponseSchema, { favorite });
   }
 
-  listFavorites(request: ListFavoritesRequest): ListFavoritesResponse {
+  async listFavorites(request: ListFavoritesRequest): Promise<ListFavoritesResponse> {
     const userId = requireUuid(request.userId, 'user_id');
     const provider = request.provider === Provider.UNSPECIFIED ? undefined : request.provider;
     const pageSize = clampPageSize(request.page?.pageSize);
     const offset = parsePageToken(request.page?.pageToken);
-    const filtered = this.favoritesRepository.listByOwner(userId.value, provider);
+    const filtered = await this.favoritesRepository.listByOwner(userId.value, provider);
     const pageItems = filtered.slice(offset, offset + pageSize);
     const nextOffset = offset + pageItems.length;
     const nextPageToken = nextOffset < filtered.length ? String(nextOffset) : '';
@@ -97,8 +97,8 @@ export class FavoritesService {
     });
   }
 
-  updateFavorite(request: UpdateFavoriteRequest): UpdateFavoriteResponse {
-    const favorite = this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async updateFavorite(request: UpdateFavoriteRequest): Promise<UpdateFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
     const maskPaths = request.updateMask?.paths ?? [];
 
     if (maskPaths.length > 0 && !maskPaths.includes('note')) {
@@ -111,23 +111,20 @@ export class FavoritesService {
       updatedAt: timestampFromDate(new Date()),
     });
 
-    this.favoritesRepository.save(
-      nextFavorite,
-      this.favoritesRepository.findById(nextFavorite.id!.value)?.sortKey ?? Date.now(),
-    );
+    await this.favoritesRepository.save(nextFavorite);
 
     return create(UpdateFavoriteResponseSchema, { favorite: nextFavorite });
   }
 
-  deleteFavorite(request: DeleteFavoriteRequest): DeleteFavoriteResponse {
-    const favorite = this.requireOwnedFavorite(request.userId, request.favoriteId);
-    this.favoritesRepository.delete(favorite);
+  async deleteFavorite(request: DeleteFavoriteRequest): Promise<DeleteFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
+    await this.favoritesRepository.delete(favorite);
 
     return create(DeleteFavoriteResponseSchema, {});
   }
 
-  refreshFavorite(request: RefreshFavoriteRequest): RefreshFavoriteResponse {
-    const favorite = this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async refreshFavorite(request: RefreshFavoriteRequest): Promise<RefreshFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
     const now = new Date();
     const refreshed = this.buildFavorite({
       id: favorite.id!,
@@ -139,22 +136,15 @@ export class FavoritesService {
       addedAt: favorite.addedAt,
     });
 
-    this.favoritesRepository.save(
-      refreshed,
-      this.favoritesRepository.findById(refreshed.id!.value)?.sortKey ?? now.getTime(),
-    );
+    await this.favoritesRepository.save(refreshed);
 
     return create(RefreshFavoriteResponseSchema, { favorite: refreshed });
   }
 
-  clear(): void {
-    this.favoritesRepository.clear();
-  }
-
-  private requireOwnedFavorite(userIdValue: Uuid | undefined, favoriteIdValue: Uuid | undefined): Favorite {
+  private async requireOwnedFavorite(userIdValue: Uuid | undefined, favoriteIdValue: Uuid | undefined): Promise<Favorite> {
     const userId = requireUuid(userIdValue, 'user_id');
     const favoriteId = requireUuid(favoriteIdValue, 'favorite_id');
-    const favorite = this.favoritesRepository.findById(favoriteId.value);
+    const favorite = await this.favoritesRepository.findById(favoriteId.value);
 
     if (!favorite || favorite.userId?.value !== userId.value) {
       throw favoriteNotFound();

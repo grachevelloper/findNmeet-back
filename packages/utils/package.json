@@ -7,6 +7,14 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "typescript": "^5.7.3"
   }

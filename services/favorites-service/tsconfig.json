@@ -6,8 +6,9 @@
     "paths": {
       "@findnmeet/ts-types": ["../../packages/ts-types/dist/src"],
       "@findnmeet/ts-types/*": ["../../packages/ts-types/dist/src/*"],
-      "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/dist"]
+      "@findnmeet/types": ["../../packages/types/dist"],
+      "@findnmeet/utils": ["../../packages/utils/dist"],
+      "@findnmeet/utils/*": ["../../packages/utils/dist/*"]
     }
   },
   "include": ["src"],

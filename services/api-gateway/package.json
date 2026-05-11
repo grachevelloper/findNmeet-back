@@ -46,9 +46,9 @@
       "^.+\\.ts$": "ts-jest"
     },
     "moduleNameMapper": {
-      "^@findnmeet/types$": "<rootDir>/../../../packages/ts-types/dist/src",
-      "^@findnmeet/types/(.*)$": "<rootDir>/../../../packages/ts-types/dist/src/$1",
-      "^@findnmeet/utils$": "<rootDir>/../../../packages/ts-utils/dist"
+      "^@findnmeet/types$": "<rootDir>/../../../packages/types/src",
+      "^@findnmeet/types/(.*)$": "<rootDir>/../../../packages/types/src/$1",
+      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

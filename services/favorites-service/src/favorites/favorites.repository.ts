@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
+import { fromJson, toJson, create } from '@bufbuild/protobuf';
+import type { JsonValue } from '@bufbuild/protobuf';
+import { timestampDate, timestampFromDate } from '@bufbuild/protobuf/wkt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { FavoriteSchema, VkFavoriteSnapshotSchema } from '@findnmeet/ts-types/favorites/v1';
+import type { Favorite, VkFavoriteSnapshot } from '@findnmeet/ts-types/favorites/v1';
 import { Provider } from '@findnmeet/ts-types/shared/v1';
+import { UuidSchema } from '@findnmeet/ts-types/shared/v1';
+
+import { FavoriteEntity } from './favorite.entity';
 
 export type FavoriteRecord = Favorite & {
   sortKey: number;
@@ -8,45 +17,94 @@ export type FavoriteRecord = Favorite & {
 
 @Injectable()
 export class FavoritesRepository {
-  private readonly favorites = new Map<string, FavoriteRecord>();
-  private readonly favoriteIdsByOwnerAndExternalId = new Map<string, string>();
+  constructor(
+    @InjectRepository(FavoriteEntity)
+    private readonly repository: Repository<FavoriteEntity>,
+  ) {}
 
-  findById(favoriteId: string): FavoriteRecord | undefined {
-    return this.favorites.get(favoriteId);
+  async findById(favoriteId: string): Promise<FavoriteRecord | undefined> {
+    const entity = await this.repository.findOneBy({ id: favoriteId });
+    return entity ? this.toFavoriteRecord(entity) : undefined;
   }
 
-  findDuplicateFavoriteId(userId: string, provider: Provider, externalId: string): string | undefined {
-    return this.favoriteIdsByOwnerAndExternalId.get(this.ownerExternalKey(userId, provider, externalId));
+  async findDuplicateFavoriteId(userId: string, provider: Provider, externalId: string): Promise<string | undefined> {
+    const entity = await this.repository.findOne({
+      select: { id: true },
+      where: {
+        userId,
+        provider,
+        externalId,
+      },
+    });
+
+    return entity?.id;
   }
 
-  listByOwner(userId: string, provider?: Provider): FavoriteRecord[] {
-    return [...this.favorites.values()]
-      .filter((favorite) => favorite.userId?.value === userId)
-      .filter((favorite) => provider === undefined || favorite.provider === provider)
-      .sort((a, b) => b.sortKey - a.sortKey);
+  async listByOwner(userId: string, provider?: Provider): Promise<FavoriteRecord[]> {
+    const entities = await this.repository.find({
+      where: {
+        userId,
+        ...(provider === undefined ? {} : { provider }),
+      },
+      order: {
+        addedAt: 'DESC',
+      },
+    });
+
+    return entities.map((entity) => this.toFavoriteRecord(entity));
   }
 
-  save(favorite: Favorite, sortKey: number): void {
-    this.favorites.set(favorite.id!.value, { ...favorite, sortKey });
-    this.favoriteIdsByOwnerAndExternalId.set(
-      this.ownerExternalKey(favorite.userId!.value, favorite.provider, favorite.externalId),
-      favorite.id!.value,
-    );
+  async save(favorite: Favorite): Promise<void> {
+    await this.repository.save(this.toEntity(favorite));
   }
 
-  delete(favorite: Favorite): void {
-    this.favorites.delete(favorite.id!.value);
-    this.favoriteIdsByOwnerAndExternalId.delete(
-      this.ownerExternalKey(favorite.userId!.value, favorite.provider, favorite.externalId),
-    );
+  async delete(favorite: Favorite): Promise<void> {
+    await this.repository.delete({ id: favorite.id!.value });
   }
 
-  clear(): void {
-    this.favorites.clear();
-    this.favoriteIdsByOwnerAndExternalId.clear();
+  private toEntity(favorite: Favorite): FavoriteEntity {
+    const entity = new FavoriteEntity();
+    const vkSnapshot = favorite.providerDetails.case === 'vkSnapshot' ? favorite.providerDetails.value : undefined;
+
+    entity.id = favorite.id!.value;
+    entity.userId = favorite.userId!.value;
+    entity.provider = favorite.provider;
+    entity.externalId = favorite.externalId;
+    entity.displayTitle = favorite.displayTitle;
+    entity.displayImageUrl = favorite.displayImageUrl;
+    entity.note = favorite.note;
+    entity.addedAt = timestampDate(favorite.addedAt!);
+    entity.updatedAt = timestampDate(favorite.updatedAt!);
+    entity.vkSnapshot = vkSnapshot ? (toJson(VkFavoriteSnapshotSchema, vkSnapshot) as Record<string, unknown>) : null;
+
+    return entity;
   }
 
-  private ownerExternalKey(userId: string, provider: Provider, externalId: string): string {
-    return `${userId}:${provider}:${externalId}`;
+  private toFavoriteRecord(entity: FavoriteEntity): FavoriteRecord {
+    const vkSnapshot = entity.vkSnapshot
+      ? (fromJson(VkFavoriteSnapshotSchema, entity.vkSnapshot as JsonValue) as VkFavoriteSnapshot)
+      : undefined;
+
+    return {
+      ...create(FavoriteSchema, {
+        id: create(UuidSchema, { value: entity.id }),
+        userId: create(UuidSchema, { value: entity.userId }),
+        provider: entity.provider,
+        externalId: entity.externalId,
+        displayTitle: entity.displayTitle,
+        displayImageUrl: entity.displayImageUrl,
+        note: entity.note,
+        addedAt: timestampFromDate(entity.addedAt),
+        updatedAt: timestampFromDate(entity.updatedAt),
+        providerDetails: vkSnapshot
+          ? {
+              case: 'vkSnapshot',
+              value: vkSnapshot,
+            }
+          : undefined,
+      }),
+      sortKey: entity.addedAt.getTime(),
+    };
   }
+
 }
