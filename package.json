@@ -9,7 +9,8 @@
     "dev:favorites": "pnpm --filter favorites-service dev",
     "dev:ai": "pnpm --filter ai-service dev",
     "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "types": "--dir packages/ty-types build"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.69.0",
