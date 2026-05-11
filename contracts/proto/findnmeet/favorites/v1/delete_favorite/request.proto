@@ -5,6 +5,5 @@ package findnmeet.favorites.v1.delete_favorite;
 import "findnmeet/shared/v1/uuid.proto";
 
 message DeleteFavoriteRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-  .findnmeet.shared.v1.Uuid favorite_id = 2;
+  .findnmeet.shared.v1.Uuid favorite_id = 1;
 }

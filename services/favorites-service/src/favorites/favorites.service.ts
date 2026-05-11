@@ -46,16 +46,16 @@ import {
   unsupportedUpdateMask,
 } from './favorites.exceptions';
 import { FavoritesRepository } from './favorites.repository';
+import type { FavoriteRecord } from './favorites.repository';
 
 @Injectable()
-export class FavoritesService {
+export class FavoritesApplicationService {
   constructor(private readonly favoritesRepository: FavoritesRepository) {}
 
-  async createFavorite(request: CreateFavoriteRequest): Promise<CreateFavoriteResponse> {
-    const userId = requireUuid(request.userId, 'user_id');
-    const provider = requireProvider(request.provider);
+  async createFavorite(ownerId: string, request: CreateFavoriteRequest): Promise<CreateFavoriteResponse> {
+    const provider = requireSupportedProvider(request.provider);
     const externalId = requireExternalId(request.externalId, 'external_id');
-    const existingId = await this.favoritesRepository.findDuplicateFavoriteId(userId.value, provider, externalId);
+    const existingId = await this.favoritesRepository.findDuplicateFavoriteId(ownerId, provider, externalId);
 
     if (existingId) {
       throw favoriteExists();
@@ -64,29 +64,27 @@ export class FavoritesService {
     const now = new Date();
     const favorite = this.buildFavorite({
       id: createUuid(randomUUID()),
-      userId,
       provider,
       externalId,
       note: request.note,
       now,
     });
 
-    await this.favoritesRepository.save(favorite);
+    await this.favoritesRepository.save(favorite, ownerId);
 
     return create(CreateFavoriteResponseSchema, { favorite });
   }
 
-  async getFavorite(request: GetFavoriteRequest): Promise<GetFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async getFavorite(ownerId: string, request: GetFavoriteRequest): Promise<GetFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
     return create(GetFavoriteResponseSchema, { favorite });
   }
 
-  async listFavorites(request: ListFavoritesRequest): Promise<ListFavoritesResponse> {
-    const userId = requireUuid(request.userId, 'user_id');
+  async listFavorites(ownerId: string, request: ListFavoritesRequest): Promise<ListFavoritesResponse> {
     const provider = request.provider === Provider.UNSPECIFIED ? undefined : request.provider;
-    const pageSize = clampPageSize(request.page?.pageSize);
-    const offset = parsePageToken(request.page?.pageToken);
-    const filtered = await this.favoritesRepository.listByOwner(userId.value, provider);
+    const pageSize = resolvePageSize(request.page?.pageSize);
+    const offset = parsePageOffset(request.page?.pageToken);
+    const filtered = await this.favoritesRepository.listByOwner(ownerId, provider);
     const pageItems = filtered.slice(offset, offset + pageSize);
     const nextOffset = offset + pageItems.length;
     const nextPageToken = nextOffset < filtered.length ? String(nextOffset) : '';
@@ -97,8 +95,8 @@ export class FavoritesService {
     });
   }
 
-  async updateFavorite(request: UpdateFavoriteRequest): Promise<UpdateFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async updateFavorite(ownerId: string, request: UpdateFavoriteRequest): Promise<UpdateFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
     const maskPaths = request.updateMask?.paths ?? [];
 
     if (maskPaths.length > 0 && !maskPaths.includes('note')) {
@@ -111,24 +109,23 @@ export class FavoritesService {
       updatedAt: timestampFromDate(new Date()),
     });
 
-    await this.favoritesRepository.save(nextFavorite);
+    await this.favoritesRepository.save(nextFavorite, ownerId);
 
     return create(UpdateFavoriteResponseSchema, { favorite: nextFavorite });
   }
 
-  async deleteFavorite(request: DeleteFavoriteRequest): Promise<DeleteFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async deleteFavorite(ownerId: string, request: DeleteFavoriteRequest): Promise<DeleteFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
     await this.favoritesRepository.delete(favorite);
 
     return create(DeleteFavoriteResponseSchema, {});
   }
 
-  async refreshFavorite(request: RefreshFavoriteRequest): Promise<RefreshFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(request.userId, request.favoriteId);
+  async refreshFavorite(ownerId: string, request: RefreshFavoriteRequest): Promise<RefreshFavoriteResponse> {
+    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
     const now = new Date();
     const refreshed = this.buildFavorite({
       id: favorite.id!,
-      userId: favorite.userId!,
       provider: favorite.provider,
       externalId: favorite.externalId,
       note: favorite.note,
@@ -136,17 +133,16 @@ export class FavoritesService {
       addedAt: favorite.addedAt,
     });
 
-    await this.favoritesRepository.save(refreshed);
+    await this.favoritesRepository.save(refreshed, ownerId);
 
     return create(RefreshFavoriteResponseSchema, { favorite: refreshed });
   }
 
-  private async requireOwnedFavorite(userIdValue: Uuid | undefined, favoriteIdValue: Uuid | undefined): Promise<Favorite> {
-    const userId = requireUuid(userIdValue, 'user_id');
+  private async requireOwnedFavorite(ownerId: string, favoriteIdValue: Uuid | undefined): Promise<FavoriteRecord> {
     const favoriteId = requireUuid(favoriteIdValue, 'favorite_id');
     const favorite = await this.favoritesRepository.findById(favoriteId.value);
 
-    if (!favorite || favorite.userId?.value !== userId.value) {
+    if (!favorite || favorite.ownerId !== ownerId) {
       throw favoriteNotFound();
     }
 
@@ -155,24 +151,18 @@ export class FavoritesService {
 
   private buildFavorite(input: {
     id: Uuid;
-    userId: Uuid;
     provider: Provider;
     externalId: string;
     note: string;
     now: Date;
     addedAt?: Favorite['addedAt'];
   }): Favorite {
-    if (input.provider !== Provider.VK) {
-      throw unsupportedProvider();
-    }
-
     const snapshot = this.buildVkSnapshot(input.externalId, input.now);
     const profile = snapshot.profile!;
     const displayTitle = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
 
     return create(FavoriteSchema, {
       id: input.id,
-      userId: input.userId,
       provider: input.provider,
       externalId: input.externalId,
       displayTitle,
@@ -205,7 +195,7 @@ export class FavoritesService {
   }
 }
 
-export function createUuid(value: string): Uuid {
+function createUuid(value: string): Uuid {
   return create(UuidSchema, { value });
 }
 
@@ -217,9 +207,13 @@ function requireUuid(value: Uuid | undefined, fieldName: string): Uuid {
   return value;
 }
 
-function requireProvider(provider: Provider): Provider {
+function requireSupportedProvider(provider: Provider): Provider {
   if (provider === Provider.UNSPECIFIED) {
     throw missingRequiredField('provider');
+  }
+
+  if (provider !== Provider.VK) {
+    throw unsupportedProvider();
   }
 
   return provider;
@@ -239,7 +233,7 @@ function requireExternalId(value: string, fieldName: string): string {
   return trimmed;
 }
 
-function clampPageSize(pageSize: number | undefined): number {
+function resolvePageSize(pageSize: number | undefined): number {
   if (!pageSize || pageSize < 1) {
     return getDefaultPageSize();
   }
@@ -247,7 +241,7 @@ function clampPageSize(pageSize: number | undefined): number {
   return Math.min(pageSize, getMaxPageSize());
 }
 
-function parsePageToken(pageToken: string | undefined): number {
+function parsePageOffset(pageToken: string | undefined): number {
   if (!pageToken) {
     return 0;
   }

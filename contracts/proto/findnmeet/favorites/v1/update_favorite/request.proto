@@ -7,8 +7,7 @@ import "findnmeet/shared/v1/uuid.proto";
 import "google/protobuf/field_mask.proto";
 
 message UpdateFavoriteRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-  .findnmeet.shared.v1.Uuid favorite_id = 2;
-  FavoritePatch patch = 3;
-  google.protobuf.FieldMask update_mask = 4;
+  .findnmeet.shared.v1.Uuid favorite_id = 1;
+  FavoritePatch patch = 2;
+  google.protobuf.FieldMask update_mask = 3;
 }
