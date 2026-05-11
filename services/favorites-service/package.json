@@ -3,21 +3,31 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "predev": "pnpm --filter @findnmeet/utils build",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "prebuild": "pnpm --filter @findnmeet/utils build",
     "build": "tsc",
     "start:prod": "node dist/index.js",
+    "pretest": "pnpm --filter @findnmeet/utils build",
     "test": "jest"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
+    "@bufbuild/protobuf": "^2.12.0",
+    "@findnmeet/ts-types": "workspace:*",
     "@findnmeet/utils": "workspace:*",
-    "express": "^4.18.2"
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "express": "^4.18.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/supertest": "^7.0.0",
+    "@nestjs/testing": "^11.0.1",
     "jest": "^30.0.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
@@ -26,12 +36,14 @@
   },
   "jest": {
     "moduleFileExtensions": ["js", "json", "ts"],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
-    "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+    "transform": { "^.+\\.ts$": "ts-jest" },
     "moduleNameMapper": {
-      "^@findnmeet/types$": "<rootDir>/../../../packages/types/src",
-      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src"
+      "^@findnmeet/ts-types$": "<rootDir>/../../packages/ts-types/dist/src",
+      "^@findnmeet/ts-types/(.*)$": "<rootDir>/../../packages/ts-types/dist/src/$1",
+      "^@findnmeet/types$": "<rootDir>/../../packages/types/src",
+      "^@findnmeet/utils$": "<rootDir>/../../packages/utils/dist"
     },
     "testEnvironment": "node"
   }

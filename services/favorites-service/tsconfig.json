@@ -4,8 +4,10 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
+      "@findnmeet/ts-types": ["../../packages/ts-types/dist/src"],
+      "@findnmeet/ts-types/*": ["../../packages/ts-types/dist/src/*"],
       "@findnmeet/types": ["../../packages/types/src"],
-      "@findnmeet/utils": ["../../packages/utils/src"]
+      "@findnmeet/utils": ["../../packages/utils/dist"]
     }
   },
   "include": ["src"],
