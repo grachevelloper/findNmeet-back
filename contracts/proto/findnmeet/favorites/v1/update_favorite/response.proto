@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1.update_favorite;
+
+import "findnmeet/favorites/v1/favorite.proto";
+
+message UpdateFavoriteResponse {
+  Favorite favorite = 1;
+}

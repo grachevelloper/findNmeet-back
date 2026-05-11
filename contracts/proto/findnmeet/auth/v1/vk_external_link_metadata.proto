@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package findnmeet.auth.v1;
+
+message VkExternalLinkMetadata {
+  string screen_name = 1;
+}

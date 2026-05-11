@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+message VkReference {
+  int64 id = 1;
+  string title = 2;
+}

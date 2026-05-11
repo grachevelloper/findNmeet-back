@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package findnmeet.search.v1;
+
+import "findnmeet/search/v1/ai_search_status.proto";
+import "findnmeet/shared/v1/page.proto";
+import "findnmeet/shared/v1/uuid.proto";
+import "findnmeet/vk/v1/profile.proto";
+
+message SearchResult {
+  repeated .findnmeet.vk.v1.VkProfile profiles = 1;
+  optional int64 total_count = 2;
+  .findnmeet.shared.v1.Uuid ai_criteria_id = 3;
+  AiSearchStatus ai_status = 4;
+  .findnmeet.shared.v1.PageResponse page = 5;
+}

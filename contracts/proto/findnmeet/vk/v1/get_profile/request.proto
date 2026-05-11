@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1.get_profile;
+
+import "findnmeet/shared/v1/sensitive_string.proto";
+import "findnmeet/vk/v1/profile_lookup.proto";
+
+message GetProfileRequest {
+  VkProfileLookup lookup = 1;
+  .findnmeet.shared.v1.SensitiveString access_token = 2;
+}

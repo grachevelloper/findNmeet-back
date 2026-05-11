@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package findnmeet.search.v1;
+
+import "findnmeet/shared/v1/uuid.proto";
+import "findnmeet/vk/v1/search_filters.proto";
+import "google/protobuf/timestamp.proto";
+
+message SearchCriteria {
+  .findnmeet.shared.v1.Uuid id = 1;
+  string raw_query = 2;
+  .findnmeet.vk.v1.VkSearchFilters vk_filters = 3;
+  google.protobuf.Timestamp parsed_at = 4;
+}

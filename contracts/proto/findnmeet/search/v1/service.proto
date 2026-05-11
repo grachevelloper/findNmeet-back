@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.search.v1;
+
+import "findnmeet/search/v1/search_people_request.proto";
+import "findnmeet/search/v1/search_people_response.proto";
+
+service SearchOrchestratorService {
+  rpc SearchPeople(SearchPeopleRequest) returns (SearchPeopleResponse);
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1.create_favorite;
+
+import "findnmeet/shared/v1/provider.proto";
+import "findnmeet/shared/v1/uuid.proto";
+
+message CreateFavoriteRequest {
+  .findnmeet.shared.v1.Uuid user_id = 1;
+  .findnmeet.shared.v1.Provider provider = 2;
+  string external_id = 3;
+  string note = 4;
+}

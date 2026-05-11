@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+enum VkPrivateMessageStatus {
+  VK_PRIVATE_MESSAGE_STATUS_UNSPECIFIED = 0;
+  VK_PRIVATE_MESSAGE_STATUS_UNKNOWN = 1;
+  VK_PRIVATE_MESSAGE_STATUS_ALLOWED = 2;
+  VK_PRIVATE_MESSAGE_STATUS_DENIED = 3;
+}

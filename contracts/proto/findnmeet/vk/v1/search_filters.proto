@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+import "findnmeet/vk/v1/reference.proto";
+import "findnmeet/vk/v1/relation_status.proto";
+
+message VkSearchFilters {
+  string query = 1;
+  VkReference city = 2;
+  VkReference country = 3;
+  VkReference university = 4;
+  VkReference faculty = 5;
+  optional int32 age_from = 6;
+  optional int32 age_to = 7;
+  optional int32 graduation_year = 8;
+  VkRelationStatus relation = 9;
+  bool online_only = 10;
+}

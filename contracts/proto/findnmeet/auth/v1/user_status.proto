@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.auth.v1;
+
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_UNKNOWN = 1;
+  USER_STATUS_ACTIVE = 2;
+  USER_STATUS_DISABLED = 3;
+}

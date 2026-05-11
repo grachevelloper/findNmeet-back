@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package findnmeet.auth.v1;
+
+enum AuthResult {
+  AUTH_RESULT_UNSPECIFIED = 0;
+  AUTH_RESULT_UNKNOWN = 1;
+  AUTH_RESULT_CREATED_USER = 2;
+  AUTH_RESULT_LINKED_EXISTING_USER = 3;
+  AUTH_RESULT_AUTHENTICATED_EXISTING_USER = 4;
+}
