@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1;
+
+message FavoritePatch {
+  optional string note = 1;
+}

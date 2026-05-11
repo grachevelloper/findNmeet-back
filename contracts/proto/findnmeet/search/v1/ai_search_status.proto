@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.search.v1;
+
+enum AiSearchStatus {
+  AI_SEARCH_STATUS_UNSPECIFIED = 0;
+  AI_SEARCH_STATUS_BASELINE = 1;
+  AI_SEARCH_STATUS_ENRICHING = 2;
+  AI_SEARCH_STATUS_ENRICHED = 3;
+}

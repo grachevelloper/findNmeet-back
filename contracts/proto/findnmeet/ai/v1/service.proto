@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.ai.v1;
+
+import "findnmeet/ai/v1/parse_search_query_request.proto";
+import "findnmeet/ai/v1/parse_search_query_response.proto";
+
+service AiService {
+  rpc ParseSearchQuery(ParseSearchQueryRequest) returns (ParseSearchQueryResponse);
+}

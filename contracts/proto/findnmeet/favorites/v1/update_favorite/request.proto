@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1.update_favorite;
+
+import "findnmeet/favorites/v1/favorite_patch.proto";
+import "findnmeet/shared/v1/uuid.proto";
+import "google/protobuf/field_mask.proto";
+
+message UpdateFavoriteRequest {
+  .findnmeet.shared.v1.Uuid user_id = 1;
+  .findnmeet.shared.v1.Uuid favorite_id = 2;
+  FavoritePatch patch = 3;
+  google.protobuf.FieldMask update_mask = 4;
+}

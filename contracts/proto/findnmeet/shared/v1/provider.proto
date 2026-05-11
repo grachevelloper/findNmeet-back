@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package findnmeet.shared.v1;
+
+enum Provider {
+  PROVIDER_UNSPECIFIED = 0;
+  PROVIDER_VK = 1;
+}

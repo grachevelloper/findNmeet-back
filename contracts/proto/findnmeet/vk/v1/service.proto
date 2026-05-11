@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+import "findnmeet/vk/v1/exchange_oauth_code_request.proto";
+import "findnmeet/vk/v1/exchange_oauth_code_response.proto";
+import "findnmeet/vk/v1/get_profile_request.proto";
+import "findnmeet/vk/v1/get_profile_response.proto";
+import "findnmeet/vk/v1/search_profiles_request.proto";
+import "findnmeet/vk/v1/search_profiles_response.proto";
+
+service VkGatewayService {
+  rpc ExchangeOAuthCode(ExchangeOAuthCodeRequest)
+      returns (ExchangeOAuthCodeResponse);
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc SearchProfiles(SearchProfilesRequest) returns (SearchProfilesResponse);
+}

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1;
+
+import "findnmeet/favorites/v1/create_favorite_request.proto";
+import "findnmeet/favorites/v1/create_favorite_response.proto";
+import "findnmeet/favorites/v1/delete_favorite_request.proto";
+import "findnmeet/favorites/v1/delete_favorite_response.proto";
+import "findnmeet/favorites/v1/get_favorite_request.proto";
+import "findnmeet/favorites/v1/get_favorite_response.proto";
+import "findnmeet/favorites/v1/list_favorites_request.proto";
+import "findnmeet/favorites/v1/list_favorites_response.proto";
+import "findnmeet/favorites/v1/refresh_favorite_request.proto";
+import "findnmeet/favorites/v1/refresh_favorite_response.proto";
+import "findnmeet/favorites/v1/update_favorite_request.proto";
+import "findnmeet/favorites/v1/update_favorite_response.proto";
+
+service FavoritesService {
+  rpc CreateFavorite(CreateFavoriteRequest) returns (CreateFavoriteResponse);
+  rpc GetFavorite(GetFavoriteRequest) returns (GetFavoriteResponse);
+  rpc ListFavorites(ListFavoritesRequest) returns (ListFavoritesResponse);
+  rpc UpdateFavorite(UpdateFavoriteRequest) returns (UpdateFavoriteResponse);
+  rpc DeleteFavorite(DeleteFavoriteRequest) returns (DeleteFavoriteResponse);
+  rpc RefreshFavorite(RefreshFavoriteRequest) returns (RefreshFavoriteResponse);
+}

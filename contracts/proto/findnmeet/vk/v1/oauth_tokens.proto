@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+import "findnmeet/shared/v1/sensitive_string.proto";
+import "google/protobuf/duration.proto";
+
+message VkOAuthTokens {
+  .findnmeet.shared.v1.SensitiveString access_token = 1;
+  .findnmeet.shared.v1.SensitiveString refresh_token = 2;
+  google.protobuf.Duration expires_in = 3;
+}

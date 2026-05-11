@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1.list_favorites;
+
+import "findnmeet/favorites/v1/favorite.proto";
+import "findnmeet/shared/v1/page.proto";
+
+message ListFavoritesResponse {
+  repeated Favorite favorites = 1;
+  .findnmeet.shared.v1.PageResponse page = 2;
+}

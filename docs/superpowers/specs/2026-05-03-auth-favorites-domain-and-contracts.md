@@ -24,7 +24,7 @@ classDiagram
         +TIMESTAMPTZ created_at
         +TIMESTAMPTZ updated_at
         +TIMESTAMPTZ last_active_at
-        +BOOLEAN is_active
+        +UserStatus status
     }
 
     class UserExternalLink {
@@ -85,10 +85,11 @@ classDiagram
         +SMALLINT graduation_year
         +String bdate_raw
         +SMALLINT age_snapshot
-        +BOOLEAN online_snapshot
+        +VkOnlineStatus online_status
         +TIMESTAMPTZ last_seen_at
         +VkRelationStatus relation
-        +BOOLEAN is_closed
+        +VkProfileVisibility visibility
+        +VkPrivateMessageStatus private_message_status
         +TIMESTAMPTZ snapshot_updated_at
     }
 
@@ -140,7 +141,8 @@ classDiagram
 - VK reference-like fields are persisted as flat columns: `{field}_id` plus `{field}_title_snapshot`.
 - API/DTO contracts expose these fields as `VkReference { id, title }`.
 - `raw_payload` is intentionally not stored by default to avoid retaining unnecessary personal data.
-- `is_closed` is retained because it explains missing profile fields. `can_access_closed` and `can_write_private_message` are deferred until a product feature needs them.
+- VK privacy and messaging state use explicit enums in API/DTO contracts so the
+  contract can evolve beyond boolean open/closed states.
 
 ---
 
@@ -174,7 +176,7 @@ Response:
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "display_name": "Иван Иванов",
     "avatar_url": "https://...",
-    "is_new_user": true
+    "auth_result": "created_user"
   }
 }
 ```
@@ -470,27 +472,28 @@ sequenceDiagram
 
 ## Proto Contracts
 
-The source of truth for generated contracts is:
+The source of truth for generated contracts is under:
 
-- `contracts/proto/shared/v1/common_types.proto`
-- `contracts/proto/auth/v1/models.proto`
-- `contracts/proto/auth/v1/service.proto`
-- `contracts/proto/vk/v1/models.proto`
-- `contracts/proto/vk/v1/service.proto`
-- `contracts/proto/favorites/v1/models.proto`
-- `contracts/proto/favorites/v1/service.proto`
-- `contracts/proto/search/v1/models.proto`
-- `contracts/proto/search/v1/service.proto`
-- `contracts/proto/ai/v1/service.proto`
+- `contracts/proto/findnmeet/shared/v1`
+- `contracts/proto/findnmeet/auth/v1`
+- `contracts/proto/findnmeet/vk/v1`
+- `contracts/proto/findnmeet/favorites/v1`
+- `contracts/proto/findnmeet/search/v1`
+- `contracts/proto/findnmeet/ai/v1`
 
 Design choices:
 
-- UUIDs are encoded as RFC 4122 bytes, matching existing project style.
-- `Provider` lives in `shared.v1` to avoid redefining provider enums per service.
-- `vk.v1.VkProfileSnapshot` is the shared VK profile DTO used by search results and favorite details.
-- `Favorite.details` uses `oneof` with `vk.v1.VkProfileSnapshot`. This keeps room for other provider-specific details without changing the stable favorite fields.
+- UUIDs are encoded as canonical RFC 4122 strings for JSON-friendly gateways.
+- `Provider` lives in `findnmeet.shared.v1` to avoid redefining provider enums
+  per service.
+- `findnmeet.vk.v1.VkProfile` is the neutral VK profile DTO used by VK gateway
+  and search results.
+- `Favorite.provider_details` uses `oneof` with
+  `findnmeet.favorites.v1.VkFavoriteSnapshot`. This keeps favorite-specific
+  snapshot data out of the neutral VK profile DTO.
 - RPC methods use response wrapper messages, following Buf STANDARD lint rules.
-- `UpdateFavoriteRequest` uses `google.protobuf.FieldMask`.
+- `UpdateFavoriteRequest` uses `FavoritePatch` plus
+  `google.protobuf.FieldMask` to restrict mutable fields.
 - Provider tokens are internal persistence details and are not exposed through public service contracts.
 
 Expected gRPC status mapping:

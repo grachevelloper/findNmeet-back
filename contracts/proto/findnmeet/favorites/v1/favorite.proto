@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package findnmeet.favorites.v1;
+
+import "findnmeet/favorites/v1/vk_favorite_snapshot.proto";
+import "findnmeet/shared/v1/provider.proto";
+import "findnmeet/shared/v1/uuid.proto";
+import "google/protobuf/timestamp.proto";
+
+message Favorite {
+  .findnmeet.shared.v1.Uuid id = 1;
+  .findnmeet.shared.v1.Uuid user_id = 2;
+  .findnmeet.shared.v1.Provider provider = 3;
+  string external_id = 4;
+  string display_title = 5;
+  string display_image_url = 6;
+  string note = 7;
+  google.protobuf.Timestamp added_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+
+  oneof provider_details {
+    VkFavoriteSnapshot vk_snapshot = 10;
+  }
+}

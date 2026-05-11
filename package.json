@@ -8,9 +8,9 @@
     "dev:search": "pnpm --filter search-orchestrator dev",
     "dev:favorites": "pnpm --filter favorites-service dev",
     "dev:ai": "pnpm --filter ai-service dev",
+    "types": "pnpm --dir packages/ts-types build",
     "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down",
-    "types": "--dir packages/ty-types build"
+    "infra:down": "docker compose down"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.69.0",

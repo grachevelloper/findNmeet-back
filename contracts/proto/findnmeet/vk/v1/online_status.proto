@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+enum VkOnlineStatus {
+  VK_ONLINE_STATUS_UNSPECIFIED = 0;
+  VK_ONLINE_STATUS_UNKNOWN = 1;
+  VK_ONLINE_STATUS_OFFLINE = 2;
+  VK_ONLINE_STATUS_ONLINE = 3;
+}

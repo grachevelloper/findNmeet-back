@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+message VkProfileLookup {
+  oneof value {
+    int64 vk_user_id = 1;
+    string screen_name = 2;
+  }
+}
