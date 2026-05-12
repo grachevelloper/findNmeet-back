@@ -4,14 +4,14 @@ import { Repository } from 'typeorm';
 import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
 import { Provider } from '@findnmeet/ts-types/shared/v1';
 
+import { entityToFavoriteRecord } from './entity-to-favorite-record';
 import { FavoriteEntity } from './favorite.entity';
-import { entityToFavoriteRecord, favoriteToEntity } from './favorites.mapper';
-import type { FavoriteRecord } from './favorites.mapper';
-
-export type { FavoriteRecord } from './favorites.mapper';
+import { favoriteToEntity } from './favorite-to-entity';
+import type { FavoriteRecord } from '../../application/ports/favorite-record.type';
+import type { FavoritesRepository } from '../../application/ports/favorites.repository';
 
 @Injectable()
-export class FavoritesRepository {
+export class TypeOrmFavoritesRepository implements FavoritesRepository {
   constructor(
     @InjectRepository(FavoriteEntity)
     private readonly repository: Repository<FavoriteEntity>,

@@ -1,8 +1,7 @@
 import { randomUUID } from 'crypto';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { create } from '@bufbuild/protobuf';
 import { timestampFromDate } from '@bufbuild/protobuf/wkt';
-import { getDefaultPageSize, getMaxPageSize } from '@findnmeet/utils';
 
 import {
   CreateFavoriteRequest,
@@ -24,33 +23,27 @@ import {
   UpdateFavoriteRequest,
   UpdateFavoriteResponse,
   UpdateFavoriteResponseSchema,
-  VkFavoriteSnapshotSchema,
 } from '@findnmeet/ts-types/favorites/v1';
-import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
-import { PageResponseSchema, Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
+import { PageResponseSchema, Provider } from '@findnmeet/ts-types/shared/v1';
 import type { Uuid } from '@findnmeet/ts-types/shared/v1';
-import {
-  VkOnlineStatus,
-  VkPrivateMessageStatus,
-  VkProfileSchema,
-  VkProfileVisibility,
-  VkRelationStatus,
-} from '@findnmeet/ts-types/vk/v1';
-import {
-  favoriteExists,
-  favoriteNotFound,
-  invalidExternalId,
-  invalidPageToken,
-  missingRequiredField,
-  unsupportedProvider,
-  unsupportedUpdateMask,
-} from './favorites.exceptions';
-import { FavoritesRepository } from './favorites.repository';
-import type { FavoriteRecord } from './favorites.repository';
+
+import { favoriteExists } from '../domain/errors/favorite-exists';
+import { favoriteNotFound } from '../domain/errors/favorite-not-found';
+import { unsupportedUpdateMask } from '../domain/errors/unsupported-update-mask';
+import { createFavorite } from '../domain/favorite.factory';
+import { createUuid } from '../domain/identifiers/create-uuid';
+import { requireExternalId } from '../domain/identifiers/require-external-id';
+import { requireUuid } from '../domain/identifiers/require-uuid';
+import { requireSupportedProvider } from '../domain/providers/require-supported-provider';
+import { parsePageOffset } from './pagination/parse-page-offset';
+import { FAVORITES_REPOSITORY } from './ports/favorites.repository';
+import type { FavoritesRepository } from './ports/favorites.repository';
+import type { FavoriteRecord } from './ports/favorite-record.type';
+import { resolvePageSize } from './pagination/resolve-page-size';
 
 @Injectable()
 export class FavoritesApplicationService {
-  constructor(private readonly favoritesRepository: FavoritesRepository) {}
+  constructor(@Inject(FAVORITES_REPOSITORY) private readonly favoritesRepository: FavoritesRepository) {}
 
   async createFavorite(ownerId: string, request: CreateFavoriteRequest): Promise<CreateFavoriteResponse> {
     const provider = requireSupportedProvider(request.provider);
@@ -62,7 +55,7 @@ export class FavoritesApplicationService {
     }
 
     const now = new Date();
-    const favorite = this.buildFavorite({
+    const favorite = createFavorite({
       id: createUuid(randomUUID()),
       provider,
       externalId,
@@ -124,7 +117,7 @@ export class FavoritesApplicationService {
   async refreshFavorite(ownerId: string, request: RefreshFavoriteRequest): Promise<RefreshFavoriteResponse> {
     const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
     const now = new Date();
-    const refreshed = this.buildFavorite({
+    const refreshed = createFavorite({
       id: favorite.id!,
       provider: favorite.provider,
       externalId: favorite.externalId,
@@ -148,109 +141,4 @@ export class FavoritesApplicationService {
 
     return favorite;
   }
-
-  private buildFavorite(input: {
-    id: Uuid;
-    provider: Provider;
-    externalId: string;
-    note: string;
-    now: Date;
-    addedAt?: Favorite['addedAt'];
-  }): Favorite {
-    const snapshot = this.buildVkSnapshot(input.externalId, input.now);
-    const profile = snapshot.profile!;
-    const displayTitle = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
-
-    return create(FavoriteSchema, {
-      id: input.id,
-      provider: input.provider,
-      externalId: input.externalId,
-      displayTitle,
-      displayImageUrl: profile.photoUrl,
-      note: input.note,
-      addedAt: input.addedAt ?? timestampFromDate(input.now),
-      updatedAt: timestampFromDate(input.now),
-      providerDetails: {
-        case: 'vkSnapshot',
-        value: snapshot,
-      },
-    });
-  }
-
-  private buildVkSnapshot(externalId: string, now: Date) {
-    return create(VkFavoriteSnapshotSchema, {
-      profile: create(VkProfileSchema, {
-        vkUserId: BigInt(externalId),
-        firstName: 'VK',
-        lastName: `User ${externalId}`,
-        screenName: `id${externalId}`,
-        photoUrl: '',
-        onlineStatus: VkOnlineStatus.UNKNOWN,
-        relation: VkRelationStatus.UNKNOWN,
-        visibility: VkProfileVisibility.UNKNOWN,
-        privateMessageStatus: VkPrivateMessageStatus.UNKNOWN,
-      }),
-      snapshotUpdatedAt: timestampFromDate(now),
-    });
-  }
-}
-
-function createUuid(value: string): Uuid {
-  return create(UuidSchema, { value });
-}
-
-function requireUuid(value: Uuid | undefined, fieldName: string): Uuid {
-  if (!value?.value) {
-    throw missingRequiredField(fieldName);
-  }
-
-  return value;
-}
-
-function requireSupportedProvider(provider: Provider): Provider {
-  if (provider === Provider.UNSPECIFIED) {
-    throw missingRequiredField('provider');
-  }
-
-  if (provider !== Provider.VK) {
-    throw unsupportedProvider();
-  }
-
-  return provider;
-}
-
-function requireExternalId(value: string, fieldName: string): string {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    throw missingRequiredField(fieldName);
-  }
-
-  if (!/^\d+$/.test(trimmed)) {
-    throw invalidExternalId(fieldName);
-  }
-
-  return trimmed;
-}
-
-function resolvePageSize(pageSize: number | undefined): number {
-  if (!pageSize || pageSize < 1) {
-    return getDefaultPageSize();
-  }
-
-  return Math.min(pageSize, getMaxPageSize());
-}
-
-function parsePageOffset(pageToken: string | undefined): number {
-  if (!pageToken) {
-    return 0;
-  }
-
-  const offset = Number(pageToken);
-
-  if (!Number.isInteger(offset) || offset < 0) {
-    throw invalidPageToken();
-  }
-
-  return offset;
 }

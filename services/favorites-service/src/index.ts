@@ -1,25 +1,16 @@
 import 'reflect-metadata';
-import { expressConnectMiddleware } from '@connectrpc/connect-express';
-import { createValidateInterceptor } from '@connectrpc/validate';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { createFavoritesConnectRoutes } from './favorites/favorites.connect';
-import { FavoritesApplicationService } from './favorites/favorites.service';
+import { favoritesGrpcOptions } from './grpc/config/favorites-grpc.options';
+import { HttpExceptionRpcFilter } from './grpc/filters/http-exception-rpc.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const favoritesService = app.get(FavoritesApplicationService);
+  const app = await NestFactory.createMicroservice(AppModule, favoritesGrpcOptions());
 
-  app.use(
-    expressConnectMiddleware({
-      interceptors: [createValidateInterceptor()],
-      routes: createFavoritesConnectRoutes(favoritesService),
-    }),
-  );
+  app.useGlobalFilters(new HttpExceptionRpcFilter());
 
-  const port = process.env.FAVORITES_SERVICE_PORT ?? 3003;
-  await app.listen(port);
-  console.log(`favorites-service running on port ${port}`);
+  await app.listen();
+  console.log('favorites-service gRPC transport is listening');
 }
 
 bootstrap();

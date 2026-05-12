@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import type { DataSourceOptions } from 'typeorm';
 
-import { FavoriteEntity } from './favorites/favorite.entity';
+import { FavoriteEntity } from './favorites/infrastructure/persistence/favorite.entity';
 
 export const favoritesDataSourceOptions: DataSourceOptions = {
   type: 'postgres',

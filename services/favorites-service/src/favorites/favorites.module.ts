@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { FavoriteEntity } from './favorite.entity';
-import { FavoritesRepository } from './favorites.repository';
-import { FavoritesApplicationService } from './favorites.service';
+import { FAVORITES_REPOSITORY } from './application/ports/favorites.repository';
+import { FavoritesApplicationService } from './application/favorites.service';
+import { FavoriteEntity } from './infrastructure/persistence/favorite.entity';
+import { TypeOrmFavoritesRepository } from './infrastructure/persistence/typeorm-favorites.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([FavoriteEntity])],
-  providers: [FavoritesRepository, FavoritesApplicationService],
+  providers: [
+    {
+      provide: FAVORITES_REPOSITORY,
+      useClass: TypeOrmFavoritesRepository,
+    },
+    FavoritesApplicationService,
+  ],
   exports: [FavoritesApplicationService],
 })
 export class FavoritesModule {}

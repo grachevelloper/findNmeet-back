@@ -3,10 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { favoritesDataSourceOptions } from './data-source';
 import { FavoritesModule } from './favorites/favorites.module';
-import { HealthController } from './health/health.controller';
+import { FavoritesGrpcController } from './grpc/controllers/favorites-grpc.controller';
 
 @Module({
   imports: [TypeOrmModule.forRoot(favoritesDataSourceOptions), FavoritesModule],
-  controllers: [HealthController],
+  controllers: [FavoritesGrpcController],
 })
 export class AppModule {}
