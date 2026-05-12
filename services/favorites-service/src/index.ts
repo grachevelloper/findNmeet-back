@@ -1,6 +1,16 @@
-import { app } from './app';
+import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { favoritesGrpcOptions } from './grpc/config/favorites-grpc.options';
+import { HttpExceptionRpcFilter } from './grpc/filters/http-exception-rpc.filter';
 
-const port = process.env.FAVORITES_SERVICE_PORT ?? 3003;
-app.listen(port, () => {
-  console.log(`favorites-service running on port ${port}`);
-});
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice(AppModule, favoritesGrpcOptions());
+
+  app.useGlobalFilters(new HttpExceptionRpcFilter());
+
+  await app.listen();
+  console.log('favorites-service gRPC transport is listening');
+}
+
+bootstrap();

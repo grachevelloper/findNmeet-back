@@ -4,10 +4,8 @@ package findnmeet.favorites.v1.list_favorites;
 
 import "findnmeet/shared/v1/page.proto";
 import "findnmeet/shared/v1/provider.proto";
-import "findnmeet/shared/v1/uuid.proto";
 
 message ListFavoritesRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-  .findnmeet.shared.v1.Provider provider = 2;
-  .findnmeet.shared.v1.PageRequest page = 3;
+  .findnmeet.shared.v1.Provider provider = 1;
+  .findnmeet.shared.v1.PageRequest page = 2;
 }
