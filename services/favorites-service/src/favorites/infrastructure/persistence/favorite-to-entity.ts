@@ -1,24 +1,28 @@
-import { toJson } from '@bufbuild/protobuf';
-import { timestampDate } from '@bufbuild/protobuf/wkt';
-import { VkFavoriteSnapshotSchema } from '@findnmeet/ts-types/favorites/v1';
-import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
-
+import type { Favorite, VkFavoriteSnapshot } from '../../domain/models/favorite';
 import { FavoriteEntity } from './favorite.entity';
+import { providerToCode } from './provider-code.mapper';
 
 export function favoriteToEntity(favorite: Favorite, ownerId: string): FavoriteEntity {
   const entity = new FavoriteEntity();
-  const vkSnapshot = favorite.providerDetails.case === 'vkSnapshot' ? favorite.providerDetails.value : undefined;
+  const vkSnapshot = favorite.providerDetails.kind === 'vkSnapshot' ? favorite.providerDetails.snapshot : undefined;
 
-  entity.id = favorite.id!.value;
+  entity.id = favorite.id;
   entity.userId = ownerId;
-  entity.provider = favorite.provider;
+  entity.provider = providerToCode(favorite.provider);
   entity.externalId = favorite.externalId;
   entity.displayTitle = favorite.displayTitle;
   entity.displayImageUrl = favorite.displayImageUrl;
   entity.note = favorite.note;
-  entity.addedAt = timestampDate(favorite.addedAt!);
-  entity.updatedAt = timestampDate(favorite.updatedAt!);
-  entity.vkSnapshot = vkSnapshot ? (toJson(VkFavoriteSnapshotSchema, vkSnapshot) as Record<string, unknown>) : null;
+  entity.addedAt = favorite.addedAt;
+  entity.updatedAt = favorite.updatedAt;
+  entity.vkSnapshot = vkSnapshot ? snapshotToJson(vkSnapshot) : null;
 
   return entity;
+}
+
+function snapshotToJson(snapshot: VkFavoriteSnapshot): Record<string, unknown> {
+  return {
+    profile: snapshot.profile,
+    snapshotUpdatedAt: snapshot.snapshotUpdatedAt.toISOString(),
+  };
 }

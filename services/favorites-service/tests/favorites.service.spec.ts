@@ -1,7 +1,4 @@
-import { create } from '@bufbuild/protobuf';
-import { CreateFavoriteRequestSchema } from '@findnmeet/ts-types/favorites/v1';
-import { Provider } from '@findnmeet/ts-types/shared/v1';
-
+import { FavoriteProvider } from '../src/favorites/domain/models/favorite-provider';
 import { FavoritesApplicationService } from '../src/favorites/application/favorites.service';
 import { createRepositoryFake } from './__fixtures__/favorites';
 
@@ -15,24 +12,23 @@ describe('FavoritesApplicationService', () => {
   });
 
   it('enforces unique user/provider/external id', async () => {
-    const request = create(CreateFavoriteRequestSchema, {
-      provider: Provider.VK,
+    const command = {
+      provider: FavoriteProvider.VK,
       externalId: '123',
-    });
+      note: '',
+    };
 
-    await service.createFavorite(ownerId, request);
+    await service.createFavorite(ownerId, command);
 
-    await expect(service.createFavorite(ownerId, request)).rejects.toThrow(expect.objectContaining({ status: 409 }));
+    await expect(service.createFavorite(ownerId, command)).rejects.toThrow(expect.objectContaining({ status: 409 }));
   });
 
   it('keeps favorites scoped by owner', async () => {
-    const favorite = (await service.createFavorite(
-      ownerId,
-      create(CreateFavoriteRequestSchema, {
-        provider: Provider.VK,
-        externalId: '456',
-      }),
-    )).favorite!;
+    const favorite = await service.createFavorite(ownerId, {
+      provider: FavoriteProvider.VK,
+      externalId: '456',
+      note: '',
+    });
 
     expect(favorite.externalId).toBe('456');
   });

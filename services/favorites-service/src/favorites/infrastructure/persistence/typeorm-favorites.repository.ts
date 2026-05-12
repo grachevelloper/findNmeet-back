@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { Favorite } from '@findnmeet/ts-types/favorites/v1';
-import { Provider } from '@findnmeet/ts-types/shared/v1';
 
 import { entityToFavoriteRecord } from './entity-to-favorite-record';
 import { FavoriteEntity } from './favorite.entity';
 import { favoriteToEntity } from './favorite-to-entity';
+import { providerToCode } from './provider-code.mapper';
+import type { Favorite } from '../../domain/models/favorite';
+import type { FavoriteProvider } from '../../domain/models/favorite-provider';
 import type { FavoriteRecord } from '../../application/ports/favorite-record.type';
 import type { FavoritesRepository } from '../../application/ports/favorites.repository';
 
@@ -22,12 +23,16 @@ export class TypeOrmFavoritesRepository implements FavoritesRepository {
     return entity ? entityToFavoriteRecord(entity) : undefined;
   }
 
-  async findDuplicateFavoriteId(userId: string, provider: Provider, externalId: string): Promise<string | undefined> {
+  async findDuplicateFavoriteId(
+    userId: string,
+    provider: FavoriteProvider,
+    externalId: string,
+  ): Promise<string | undefined> {
     const entity = await this.repository.findOne({
       select: { id: true },
       where: {
         userId,
-        provider,
+        provider: providerToCode(provider),
         externalId,
       },
     });
@@ -35,11 +40,11 @@ export class TypeOrmFavoritesRepository implements FavoritesRepository {
     return entity?.id;
   }
 
-  async listByOwner(userId: string, provider?: Provider): Promise<FavoriteRecord[]> {
+  async listByOwner(userId: string, provider?: FavoriteProvider): Promise<FavoriteRecord[]> {
     const entities = await this.repository.find({
       where: {
         userId,
-        ...(provider === undefined ? {} : { provider }),
+        ...(provider === undefined ? {} : { provider: providerToCode(provider) }),
       },
       order: {
         addedAt: 'DESC',
@@ -54,6 +59,6 @@ export class TypeOrmFavoritesRepository implements FavoritesRepository {
   }
 
   async delete(favorite: Favorite): Promise<void> {
-    await this.repository.delete({ id: favorite.id!.value });
+    await this.repository.delete({ id: favorite.id });
   }
 }

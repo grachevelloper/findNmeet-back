@@ -1,40 +1,22 @@
 import { randomUUID } from 'crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { create } from '@bufbuild/protobuf';
-import { timestampFromDate } from '@bufbuild/protobuf/wkt';
-
-import {
-  CreateFavoriteRequest,
-  CreateFavoriteResponse,
-  CreateFavoriteResponseSchema,
-  DeleteFavoriteRequest,
-  DeleteFavoriteResponse,
-  DeleteFavoriteResponseSchema,
-  FavoriteSchema,
-  GetFavoriteRequest,
-  GetFavoriteResponse,
-  GetFavoriteResponseSchema,
-  ListFavoritesRequest,
-  ListFavoritesResponse,
-  ListFavoritesResponseSchema,
-  RefreshFavoriteRequest,
-  RefreshFavoriteResponse,
-  RefreshFavoriteResponseSchema,
-  UpdateFavoriteRequest,
-  UpdateFavoriteResponse,
-  UpdateFavoriteResponseSchema,
-} from '@findnmeet/ts-types/favorites/v1';
-import { PageResponseSchema, Provider } from '@findnmeet/ts-types/shared/v1';
-import type { Uuid } from '@findnmeet/ts-types/shared/v1';
 
 import { favoriteExists } from '../domain/errors/favorite-exists';
 import { favoriteNotFound } from '../domain/errors/favorite-not-found';
 import { unsupportedUpdateMask } from '../domain/errors/unsupported-update-mask';
+import type { Favorite } from '../domain/models/favorite';
 import { createFavorite } from '../domain/favorite.factory';
 import { createUuid } from '../domain/identifiers/create-uuid';
-import { requireExternalId } from '../domain/identifiers/require-external-id';
-import { requireUuid } from '../domain/identifiers/require-uuid';
-import { requireSupportedProvider } from '../domain/providers/require-supported-provider';
+import { requireExternalId, requireSupportedProvider, requireUuid } from '../domain/requirements';
+import type {
+  CreateFavoriteCommand,
+  DeleteFavoriteCommand,
+  GetFavoriteQuery,
+  ListFavoritesQuery,
+  RefreshFavoriteCommand,
+  UpdateFavoriteCommand,
+} from './contracts/favorites.commands';
+import type { ListFavoritesResult } from './contracts/favorites.results';
 import { parsePageOffset } from './pagination/parse-page-offset';
 import { FAVORITES_REPOSITORY } from './ports/favorites.repository';
 import type { FavoritesRepository } from './ports/favorites.repository';
@@ -45,9 +27,9 @@ import { resolvePageSize } from './pagination/resolve-page-size';
 export class FavoritesApplicationService {
   constructor(@Inject(FAVORITES_REPOSITORY) private readonly favoritesRepository: FavoritesRepository) {}
 
-  async createFavorite(ownerId: string, request: CreateFavoriteRequest): Promise<CreateFavoriteResponse> {
-    const provider = requireSupportedProvider(request.provider);
-    const externalId = requireExternalId(request.externalId, 'external_id');
+  async createFavorite(ownerId: string, command: CreateFavoriteCommand): Promise<Favorite> {
+    const provider = requireSupportedProvider(command.provider);
+    const externalId = requireExternalId(command.externalId, 'external_id');
     const existingId = await this.favoritesRepository.findDuplicateFavoriteId(ownerId, provider, externalId);
 
     if (existingId) {
@@ -59,66 +41,63 @@ export class FavoritesApplicationService {
       id: createUuid(randomUUID()),
       provider,
       externalId,
-      note: request.note,
+      note: command.note,
       now,
     });
 
     await this.favoritesRepository.save(favorite, ownerId);
 
-    return create(CreateFavoriteResponseSchema, { favorite });
+    return favorite;
   }
 
-  async getFavorite(ownerId: string, request: GetFavoriteRequest): Promise<GetFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
-    return create(GetFavoriteResponseSchema, { favorite });
+  async getFavorite(ownerId: string, query: GetFavoriteQuery): Promise<Favorite> {
+    return this.requireOwnedFavorite(ownerId, query.favoriteId);
   }
 
-  async listFavorites(ownerId: string, request: ListFavoritesRequest): Promise<ListFavoritesResponse> {
-    const provider = request.provider === Provider.UNSPECIFIED ? undefined : request.provider;
-    const pageSize = resolvePageSize(request.page?.pageSize);
-    const offset = parsePageOffset(request.page?.pageToken);
+  async listFavorites(ownerId: string, query: ListFavoritesQuery): Promise<ListFavoritesResult> {
+    const provider = query.provider;
+    const pageSize = resolvePageSize(query.pageSize);
+    const offset = parsePageOffset(query.pageToken);
     const filtered = await this.favoritesRepository.listByOwner(ownerId, provider);
     const pageItems = filtered.slice(offset, offset + pageSize);
     const nextOffset = offset + pageItems.length;
     const nextPageToken = nextOffset < filtered.length ? String(nextOffset) : '';
 
-    return create(ListFavoritesResponseSchema, {
+    return {
       favorites: pageItems,
-      page: create(PageResponseSchema, { nextPageToken }),
-    });
+      nextPageToken,
+    };
   }
 
-  async updateFavorite(ownerId: string, request: UpdateFavoriteRequest): Promise<UpdateFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
-    const maskPaths = request.updateMask?.paths ?? [];
+  async updateFavorite(ownerId: string, command: UpdateFavoriteCommand): Promise<Favorite> {
+    const favorite = await this.requireOwnedFavorite(ownerId, command.favoriteId);
+    const maskPaths = command.updateMaskPaths;
 
     if (maskPaths.length > 0 && !maskPaths.includes('note')) {
       throw unsupportedUpdateMask();
     }
 
-    const nextFavorite = create(FavoriteSchema, {
+    const nextFavorite: Favorite = {
       ...favorite,
-      note: request.patch?.note ?? favorite.note,
-      updatedAt: timestampFromDate(new Date()),
-    });
+      note: command.note ?? favorite.note,
+      updatedAt: new Date(),
+    };
 
     await this.favoritesRepository.save(nextFavorite, ownerId);
 
-    return create(UpdateFavoriteResponseSchema, { favorite: nextFavorite });
+    return nextFavorite;
   }
 
-  async deleteFavorite(ownerId: string, request: DeleteFavoriteRequest): Promise<DeleteFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
+  async deleteFavorite(ownerId: string, command: DeleteFavoriteCommand): Promise<void> {
+    const favorite = await this.requireOwnedFavorite(ownerId, command.favoriteId);
     await this.favoritesRepository.delete(favorite);
-
-    return create(DeleteFavoriteResponseSchema, {});
   }
 
-  async refreshFavorite(ownerId: string, request: RefreshFavoriteRequest): Promise<RefreshFavoriteResponse> {
-    const favorite = await this.requireOwnedFavorite(ownerId, request.favoriteId);
+  async refreshFavorite(ownerId: string, command: RefreshFavoriteCommand): Promise<Favorite> {
+    const favorite = await this.requireOwnedFavorite(ownerId, command.favoriteId);
     const now = new Date();
     const refreshed = createFavorite({
-      id: favorite.id!,
+      id: favorite.id,
       provider: favorite.provider,
       externalId: favorite.externalId,
       note: favorite.note,
@@ -128,12 +107,12 @@ export class FavoritesApplicationService {
 
     await this.favoritesRepository.save(refreshed, ownerId);
 
-    return create(RefreshFavoriteResponseSchema, { favorite: refreshed });
+    return refreshed;
   }
 
-  private async requireOwnedFavorite(ownerId: string, favoriteIdValue: Uuid | undefined): Promise<FavoriteRecord> {
+  private async requireOwnedFavorite(ownerId: string, favoriteIdValue: string | undefined): Promise<FavoriteRecord> {
     const favoriteId = requireUuid(favoriteIdValue, 'favorite_id');
-    const favorite = await this.favoritesRepository.findById(favoriteId.value);
+    const favorite = await this.favoritesRepository.findById(favoriteId);
 
     if (!favorite || favorite.ownerId !== ownerId) {
       throw favoriteNotFound();

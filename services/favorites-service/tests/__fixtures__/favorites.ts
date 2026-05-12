@@ -1,21 +1,16 @@
 import { create } from '@bufbuild/protobuf';
 import { Metadata } from '@grpc/grpc-js';
-import { timestampDate } from '@bufbuild/protobuf/wkt';
 import {
   CreateFavoriteRequestSchema,
   DeleteFavoriteRequestSchema,
   GetFavoriteRequestSchema,
   RefreshFavoriteRequestSchema,
 } from '@findnmeet/ts-types/favorites/v1';
-import type {
-  CreateFavoriteRequest,
-  DeleteFavoriteRequest,
-  Favorite,
-  GetFavoriteRequest,
-  RefreshFavoriteRequest,
-} from '@findnmeet/ts-types/favorites/v1';
+import type { CreateFavoriteRequest, DeleteFavoriteRequest, GetFavoriteRequest, RefreshFavoriteRequest } from '@findnmeet/ts-types/favorites/v1';
 import { Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
+import type { Favorite } from '../../src/favorites/domain/models/favorite';
+import { FavoriteProvider } from '../../src/favorites/domain/models/favorite-provider';
 import type { FavoriteRecord } from '../../src/favorites/application/ports/favorite-record.type';
 import type { FavoritesRepository } from '../../src/favorites/application/ports/favorites.repository';
 
@@ -54,27 +49,27 @@ export function createRepositoryFake(): FavoritesRepository {
     async findById(favoriteId: string) {
       return favorites.get(favoriteId);
     },
-    async findDuplicateFavoriteId(ownerId: string, provider: Provider, externalId: string) {
+    async findDuplicateFavoriteId(ownerId: string, provider: FavoriteProvider, externalId: string) {
       return [...favorites.values()].find(
         (favorite) =>
           favorite.ownerId === ownerId && favorite.provider === provider && favorite.externalId === externalId,
-      )?.id?.value;
+      )?.id;
     },
-    async listByOwner(ownerId: string, provider?: Provider) {
+    async listByOwner(ownerId: string, provider?: FavoriteProvider) {
       return [...favorites.values()]
         .filter((favorite) => favorite.ownerId === ownerId)
         .filter((favorite) => provider === undefined || favorite.provider === provider)
         .sort((a, b) => b.sortKey - a.sortKey);
     },
     async save(favorite: Favorite, ownerId: string) {
-      favorites.set(favorite.id!.value, {
+      favorites.set(favorite.id, {
         ...favorite,
         ownerId,
-        sortKey: timestampDate(favorite.addedAt!).getTime(),
+        sortKey: favorite.addedAt.getTime(),
       });
     },
     async delete(favorite: Favorite) {
-      favorites.delete(favorite.id!.value);
+      favorites.delete(favorite.id);
     },
   } as FavoritesRepository;
 }

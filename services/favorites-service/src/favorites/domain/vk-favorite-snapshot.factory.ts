@@ -1,27 +1,14 @@
-import { create } from '@bufbuild/protobuf';
-import { timestampFromDate } from '@bufbuild/protobuf/wkt';
-import { VkFavoriteSnapshotSchema } from '@findnmeet/ts-types/favorites/v1';
-import {
-  VkOnlineStatus,
-  VkPrivateMessageStatus,
-  VkProfileSchema,
-  VkProfileVisibility,
-  VkRelationStatus,
-} from '@findnmeet/ts-types/vk/v1';
+import type { VkFavoriteSnapshot } from './models/favorite';
 
-export function createVkFavoriteSnapshot(externalId: string, now: Date) {
-  return create(VkFavoriteSnapshotSchema, {
-    profile: create(VkProfileSchema, {
-      vkUserId: BigInt(externalId),
+export function createVkFavoriteSnapshot(externalId: string, now: Date): VkFavoriteSnapshot {
+  return {
+    profile: {
+      vkUserId: externalId,
       firstName: 'VK',
       lastName: `User ${externalId}`,
       screenName: `id${externalId}`,
       photoUrl: '',
-      onlineStatus: VkOnlineStatus.UNKNOWN,
-      relation: VkRelationStatus.UNKNOWN,
-      visibility: VkProfileVisibility.UNKNOWN,
-      privateMessageStatus: VkPrivateMessageStatus.UNKNOWN,
-    }),
-    snapshotUpdatedAt: timestampFromDate(now),
-  });
+    },
+    snapshotUpdatedAt: now,
+  };
 }
