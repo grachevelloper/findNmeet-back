@@ -1,36 +1,49 @@
-import { create, fromJson } from '@bufbuild/protobuf';
-import type { JsonValue } from '@bufbuild/protobuf';
-import { timestampFromDate } from '@bufbuild/protobuf/wkt';
-import { FavoriteSchema, VkFavoriteSnapshotSchema } from '@findnmeet/ts-types/favorites/v1';
-import type { VkFavoriteSnapshot } from '@findnmeet/ts-types/favorites/v1';
-import { UuidSchema } from '@findnmeet/ts-types/shared/v1';
-
 import type { FavoriteRecord } from '../../application/ports/favorite-record.type';
+import type { VkFavoriteSnapshot } from '../../domain/models/favorite';
 import { FavoriteEntity } from './favorite.entity';
+import { providerFromCode } from './provider-code.mapper';
 
 export function entityToFavoriteRecord(entity: FavoriteEntity): FavoriteRecord {
-  const vkSnapshot = entity.vkSnapshot
-    ? (fromJson(VkFavoriteSnapshotSchema, entity.vkSnapshot as JsonValue) as VkFavoriteSnapshot)
-    : undefined;
+  const vkSnapshot = entity.vkSnapshot ? restoreVkSnapshot(entity.vkSnapshot) : undefined;
 
   return {
-    ...create(FavoriteSchema, {
-      id: create(UuidSchema, { value: entity.id }),
-      provider: entity.provider,
-      externalId: entity.externalId,
-      displayTitle: entity.displayTitle,
-      displayImageUrl: entity.displayImageUrl,
-      note: entity.note,
-      addedAt: timestampFromDate(entity.addedAt),
-      updatedAt: timestampFromDate(entity.updatedAt),
-      providerDetails: vkSnapshot
-        ? {
-            case: 'vkSnapshot',
-            value: vkSnapshot,
-          }
-        : undefined,
-    }),
+    id: entity.id,
+    provider: providerFromCode(entity.provider),
+    externalId: entity.externalId,
+    displayTitle: entity.displayTitle,
+    displayImageUrl: entity.displayImageUrl,
+    note: entity.note,
+    addedAt: entity.addedAt,
+    updatedAt: entity.updatedAt,
+    providerDetails: {
+      kind: 'vkSnapshot',
+      snapshot: vkSnapshot ?? {
+        profile: {
+          vkUserId: entity.externalId,
+          firstName: '',
+          lastName: '',
+          screenName: '',
+          photoUrl: '',
+        },
+        snapshotUpdatedAt: entity.updatedAt,
+      },
+    },
     ownerId: entity.userId,
     sortKey: entity.addedAt.getTime(),
+  };
+}
+
+function restoreVkSnapshot(value: Record<string, unknown>): VkFavoriteSnapshot {
+  const profile = value.profile as Record<string, unknown> | undefined;
+
+  return {
+    profile: {
+      vkUserId: String(profile?.vkUserId ?? ''),
+      firstName: String(profile?.firstName ?? ''),
+      lastName: String(profile?.lastName ?? ''),
+      screenName: String(profile?.screenName ?? ''),
+      photoUrl: String(profile?.photoUrl ?? ''),
+    },
+    snapshotUpdatedAt: new Date(String(value.snapshotUpdatedAt)),
   };
 }

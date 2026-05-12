@@ -110,9 +110,9 @@ describe('FavoritesGrpcController', () => {
   });
 
   it('requires gateway user metadata', async () => {
-    expect(() => controller.createFavorite(createFavoriteRequest('100'), new Metadata())).toThrow(
-      expect.objectContaining({ status: 401 }),
-    );
+    await expect(controller.createFavorite(createFavoriteRequest('100'), new Metadata())).rejects.toMatchObject({
+      status: 401,
+    });
   });
 });
 

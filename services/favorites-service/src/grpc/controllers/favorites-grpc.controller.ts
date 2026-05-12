@@ -18,38 +18,70 @@ import type {
 
 import { currentUserId } from '../metadata/current-user-id';
 import { FavoritesApplicationService } from '../../favorites/application/favorites.service';
+import {
+  createFavoriteCommandFromProto,
+  createFavoriteResponseToProto,
+  deleteFavoriteCommandFromProto,
+  deleteFavoriteResponseToProto,
+  getFavoriteQueryFromProto,
+  getFavoriteResponseToProto,
+  listFavoritesQueryFromProto,
+  listFavoritesResponseToProto,
+  refreshFavoriteCommandFromProto,
+  refreshFavoriteResponseToProto,
+  updateFavoriteCommandFromProto,
+  updateFavoriteResponseToProto,
+} from '../mappers/favorites-protobuf.mapper';
 
 @Controller()
 export class FavoritesGrpcController {
   constructor(private readonly favoritesService: FavoritesApplicationService) {}
 
   @GrpcMethod('FavoritesService', 'CreateFavorite')
-  createFavorite(request: CreateFavoriteRequest, metadata: Metadata): Promise<CreateFavoriteResponse> {
-    return this.favoritesService.createFavorite(currentUserId(metadata), request);
+  async createFavorite(request: CreateFavoriteRequest, metadata: Metadata): Promise<CreateFavoriteResponse> {
+    const favorite = await this.favoritesService.createFavorite(
+      currentUserId(metadata),
+      createFavoriteCommandFromProto(request),
+    );
+    return createFavoriteResponseToProto(favorite);
   }
 
   @GrpcMethod('FavoritesService', 'GetFavorite')
-  getFavorite(request: GetFavoriteRequest, metadata: Metadata): Promise<GetFavoriteResponse> {
-    return this.favoritesService.getFavorite(currentUserId(metadata), request);
+  async getFavorite(request: GetFavoriteRequest, metadata: Metadata): Promise<GetFavoriteResponse> {
+    const favorite = await this.favoritesService.getFavorite(currentUserId(metadata), getFavoriteQueryFromProto(request));
+    return getFavoriteResponseToProto(favorite);
   }
 
   @GrpcMethod('FavoritesService', 'ListFavorites')
-  listFavorites(request: ListFavoritesRequest, metadata: Metadata): Promise<ListFavoritesResponse> {
-    return this.favoritesService.listFavorites(currentUserId(metadata), request);
+  async listFavorites(request: ListFavoritesRequest, metadata: Metadata): Promise<ListFavoritesResponse> {
+    const result = await this.favoritesService.listFavorites(
+      currentUserId(metadata),
+      listFavoritesQueryFromProto(request),
+    );
+    return listFavoritesResponseToProto(result);
   }
 
   @GrpcMethod('FavoritesService', 'UpdateFavorite')
-  updateFavorite(request: UpdateFavoriteRequest, metadata: Metadata): Promise<UpdateFavoriteResponse> {
-    return this.favoritesService.updateFavorite(currentUserId(metadata), request);
+  async updateFavorite(request: UpdateFavoriteRequest, metadata: Metadata): Promise<UpdateFavoriteResponse> {
+    const favorite = await this.favoritesService.updateFavorite(
+      currentUserId(metadata),
+      updateFavoriteCommandFromProto(request),
+    );
+    return updateFavoriteResponseToProto(favorite);
   }
 
   @GrpcMethod('FavoritesService', 'DeleteFavorite')
-  deleteFavorite(request: DeleteFavoriteRequest, metadata: Metadata): Promise<DeleteFavoriteResponse> {
-    return this.favoritesService.deleteFavorite(currentUserId(metadata), request);
+  async deleteFavorite(request: DeleteFavoriteRequest, metadata: Metadata): Promise<DeleteFavoriteResponse> {
+    await this.favoritesService.deleteFavorite(currentUserId(metadata), deleteFavoriteCommandFromProto(request));
+    return deleteFavoriteResponseToProto();
   }
 
   @GrpcMethod('FavoritesService', 'RefreshFavorite')
-  refreshFavorite(request: RefreshFavoriteRequest, metadata: Metadata): Promise<RefreshFavoriteResponse> {
-    return this.favoritesService.refreshFavorite(currentUserId(metadata), request);
+  async refreshFavorite(request: RefreshFavoriteRequest, metadata: Metadata): Promise<RefreshFavoriteResponse> {
+    const favorite = await this.favoritesService.refreshFavorite(
+      currentUserId(metadata),
+      refreshFavoriteCommandFromProto(request),
+    );
+    return refreshFavoriteResponseToProto(favorite);
   }
 }
