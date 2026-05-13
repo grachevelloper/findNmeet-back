@@ -80,7 +80,7 @@ describe('FavoritesGrpcController', () => {
 
     await expect(
       controller.deleteFavorite(favoriteIdRequest(DeleteFavoriteRequestSchema, favoriteId), metadataWithUserId()),
-    ).resolves.toHaveProperty('$typeName', 'findnmeet.favorites.v1.delete_favorite.DeleteFavoriteResponse');
+    ).resolves.toHaveProperty('$typeName', 'findnmeet.favorites.v1.DeleteFavoriteResponse');
 
     await expect(
       controller.getFavorite(favoriteIdRequest(GetFavoriteRequestSchema, favoriteId), metadataWithUserId()),

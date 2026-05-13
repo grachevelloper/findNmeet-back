@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.get_user;
-
-import "findnmeet/shared/v1/uuid.proto";
-
-message GetUserRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-}

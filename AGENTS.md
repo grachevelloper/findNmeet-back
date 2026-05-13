@@ -307,8 +307,5 @@ Planned or partially wired:
 - AI-backed features.
 
 Known inconsistencies to resolve:
-
-- `packages/types` and `packages/ts-types` both declare the package name `@findnmeet/types`.
-- Several services depend on `@findnmeet/types`, but mappings differ between `packages/types` and `packages/ts-types`.
 - `packages/utils/tsconfig.json` references `../ts-utils`, which is not a workspace package directory.
 - `api-gateway/src/main.ts` starts a TCP microservice but does not call `listen()` and does not match the HTTP health check used by tests.

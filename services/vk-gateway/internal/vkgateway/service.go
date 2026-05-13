@@ -8,9 +8,6 @@ import (
 
 	sharedv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shared/v1"
 	vkv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1"
-	exchangeoauthcodev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/exchange_oauth_code"
-	getprofilev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/get_profile"
-	searchprofilesv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/search_profiles"
 	"github.com/findnmeet/vk-gateway/internal/vkapi"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,7 +26,7 @@ func NewService(client VKClient) *Service {
 	return &Service{client: client}
 }
 
-func (s *Service) ExchangeOAuthCode(ctx context.Context, req *exchangeoauthcodev1.ExchangeOAuthCodeRequest) (*exchangeoauthcodev1.ExchangeOAuthCodeResponse, error) {
+func (s *Service) ExchangeOAuthCode(ctx context.Context, req *vkv1.ExchangeOAuthCodeRequest) (*vkv1.ExchangeOAuthCodeResponse, error) {
 	code := strings.TrimSpace(req.GetCode())
 	redirectURI := strings.TrimSpace(req.GetRedirectUri())
 	if code == "" {
@@ -49,10 +46,10 @@ func (s *Service) ExchangeOAuthCode(ctx context.Context, req *exchangeoauthcodev
 		return nil, grpcError(err)
 	}
 
-	return &exchangeoauthcodev1.ExchangeOAuthCodeResponse{ExternalId: externalID, Tokens: tokens, Profile: profile}, nil
+	return &vkv1.ExchangeOAuthCodeResponse{ExternalId: externalID, Tokens: tokens, Profile: profile}, nil
 }
 
-func (s *Service) GetProfile(ctx context.Context, req *getprofilev1.GetProfileRequest) (*getprofilev1.GetProfileResponse, error) {
+func (s *Service) GetProfile(ctx context.Context, req *vkv1.GetProfileRequest) (*vkv1.GetProfileResponse, error) {
 	lookup, err := profileLookup(req.GetLookup())
 	if err != nil {
 		return nil, err
@@ -63,10 +60,10 @@ func (s *Service) GetProfile(ctx context.Context, req *getprofilev1.GetProfileRe
 		return nil, grpcError(err)
 	}
 
-	return &getprofilev1.GetProfileResponse{Profile: profile}, nil
+	return &vkv1.GetProfileResponse{Profile: profile}, nil
 }
 
-func (s *Service) SearchProfiles(context.Context, *searchprofilesv1.SearchProfilesRequest) (*searchprofilesv1.SearchProfilesResponse, error) {
+func (s *Service) SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "SearchProfiles is not implemented yet")
 }
 

@@ -4,18 +4,18 @@ package findnmeet.vk.v1;
 
 option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
 
-import "findnmeet/vk/v1/exchange_oauth_code/request.proto";
-import "findnmeet/vk/v1/exchange_oauth_code/response.proto";
-import "findnmeet/vk/v1/get_profile/request.proto";
-import "findnmeet/vk/v1/get_profile/response.proto";
-import "findnmeet/vk/v1/search_profiles/request.proto";
-import "findnmeet/vk/v1/search_profiles/response.proto";
+import "findnmeet/vk/v1/exchange_oauth_code_request.proto";
+import "findnmeet/vk/v1/exchange_oauth_code_response.proto";
+import "findnmeet/vk/v1/get_profile_request.proto";
+import "findnmeet/vk/v1/get_profile_response.proto";
+import "findnmeet/vk/v1/search_profiles_request.proto";
+import "findnmeet/vk/v1/search_profiles_response.proto";
 
 service VkGatewayService {
-  rpc ExchangeOAuthCode(.findnmeet.vk.v1.exchange_oauth_code.ExchangeOAuthCodeRequest)
-      returns (.findnmeet.vk.v1.exchange_oauth_code.ExchangeOAuthCodeResponse);
-  rpc GetProfile(.findnmeet.vk.v1.get_profile.GetProfileRequest)
-      returns (.findnmeet.vk.v1.get_profile.GetProfileResponse);
-  rpc SearchProfiles(.findnmeet.vk.v1.search_profiles.SearchProfilesRequest)
-      returns (.findnmeet.vk.v1.search_profiles.SearchProfilesResponse);
+  rpc ExchangeOAuthCode(ExchangeOAuthCodeRequest)
+      returns (ExchangeOAuthCodeResponse);
+  rpc GetProfile(GetProfileRequest)
+      returns (GetProfileResponse);
+  rpc SearchProfiles(SearchProfilesRequest)
+      returns (SearchProfilesResponse);
 }

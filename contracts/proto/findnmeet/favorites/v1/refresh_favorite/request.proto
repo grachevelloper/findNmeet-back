@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.favorites.v1.refresh_favorite;
-
-import "findnmeet/shared/v1/uuid.proto";
-
-message RefreshFavoriteRequest {
-  .findnmeet.shared.v1.Uuid favorite_id = 1;
-}

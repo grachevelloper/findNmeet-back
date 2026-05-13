@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
+
+message ExchangeOAuthCodeRequest {
+  string code = 1;
+  string redirect_uri = 2;
+  string code_verifier = 3;
+}

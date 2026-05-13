@@ -8,8 +8,6 @@ import (
 
 	sharedv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shared/v1"
 	vkv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1"
-	exchangeoauthcodev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/exchange_oauth_code"
-	getprofilev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/get_profile"
 	"github.com/findnmeet/vk-gateway/internal/vkapi"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -55,7 +53,7 @@ func TestExchangeOAuthCodeReturnsTokensAndProfile(t *testing.T) {
 	client := &fakeVKClient{}
 	service := NewService(client)
 
-	response, err := service.ExchangeOAuthCode(context.Background(), &exchangeoauthcodev1.ExchangeOAuthCodeRequest{
+	response, err := service.ExchangeOAuthCode(context.Background(), &vkv1.ExchangeOAuthCodeRequest{
 		Code:        "oauth-code",
 		RedirectUri: "http://localhost:3000/auth/vk/callback",
 	})
@@ -84,7 +82,7 @@ func TestGetProfileAcceptsVkUserIDLookup(t *testing.T) {
 	client := &fakeVKClient{}
 	service := NewService(client)
 
-	response, err := service.GetProfile(context.Background(), &getprofilev1.GetProfileRequest{
+	response, err := service.GetProfile(context.Background(), &vkv1.GetProfileRequest{
 		Lookup:      &vkv1.VkProfileLookup{Value: &vkv1.VkProfileLookup_VkUserId{VkUserId: 123}},
 		AccessToken: &sharedv1.SensitiveString{Value: "vk-access-token"},
 	})
@@ -103,7 +101,7 @@ func TestGetProfileAcceptsVkUserIDLookup(t *testing.T) {
 func TestExchangeOAuthCodeValidatesCode(t *testing.T) {
 	service := NewService(&fakeVKClient{})
 
-	_, err := service.ExchangeOAuthCode(context.Background(), &exchangeoauthcodev1.ExchangeOAuthCodeRequest{
+	_, err := service.ExchangeOAuthCode(context.Background(), &vkv1.ExchangeOAuthCodeRequest{
 		RedirectUri: "http://localhost:3000/auth/vk/callback",
 	})
 
@@ -115,7 +113,7 @@ func TestExchangeOAuthCodeValidatesCode(t *testing.T) {
 func TestVKClientErrorsMapToGrpcCodes(t *testing.T) {
 	service := NewService(&fakeVKClient{profileErr: vkapi.ErrUnauthorized})
 
-	_, err := service.GetProfile(context.Background(), &getprofilev1.GetProfileRequest{
+	_, err := service.GetProfile(context.Background(), &vkv1.GetProfileRequest{
 		Lookup:      &vkv1.VkProfileLookup{Value: &vkv1.VkProfileLookup_ScreenName{ScreenName: "ivan"}},
 		AccessToken: &sharedv1.SensitiveString{Value: "bad-token"},
 	})
@@ -128,7 +126,7 @@ func TestVKClientErrorsMapToGrpcCodes(t *testing.T) {
 func TestUnknownErrorsMapToUnavailable(t *testing.T) {
 	service := NewService(&fakeVKClient{profileErr: errors.New("network failed")})
 
-	_, err := service.GetProfile(context.Background(), &getprofilev1.GetProfileRequest{
+	_, err := service.GetProfile(context.Background(), &vkv1.GetProfileRequest{
 		Lookup:      &vkv1.VkProfileLookup{Value: &vkv1.VkProfileLookup_ScreenName{ScreenName: "ivan"}},
 		AccessToken: &sharedv1.SensitiveString{Value: "vk-access-token"},
 	})

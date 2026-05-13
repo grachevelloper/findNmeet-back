@@ -2,30 +2,30 @@ syntax = "proto3";
 
 package findnmeet.favorites.v1;
 
-import "findnmeet/favorites/v1/create_favorite/request.proto";
-import "findnmeet/favorites/v1/create_favorite/response.proto";
-import "findnmeet/favorites/v1/delete_favorite/request.proto";
-import "findnmeet/favorites/v1/delete_favorite/response.proto";
-import "findnmeet/favorites/v1/get_favorite/request.proto";
-import "findnmeet/favorites/v1/get_favorite/response.proto";
-import "findnmeet/favorites/v1/list_favorites/request.proto";
-import "findnmeet/favorites/v1/list_favorites/response.proto";
-import "findnmeet/favorites/v1/refresh_favorite/request.proto";
-import "findnmeet/favorites/v1/refresh_favorite/response.proto";
-import "findnmeet/favorites/v1/update_favorite/request.proto";
-import "findnmeet/favorites/v1/update_favorite/response.proto";
+import "findnmeet/favorites/v1/create_favorite_request.proto";
+import "findnmeet/favorites/v1/create_favorite_response.proto";
+import "findnmeet/favorites/v1/delete_favorite_request.proto";
+import "findnmeet/favorites/v1/delete_favorite_response.proto";
+import "findnmeet/favorites/v1/get_favorite_request.proto";
+import "findnmeet/favorites/v1/get_favorite_response.proto";
+import "findnmeet/favorites/v1/list_favorites_request.proto";
+import "findnmeet/favorites/v1/list_favorites_response.proto";
+import "findnmeet/favorites/v1/refresh_favorite_request.proto";
+import "findnmeet/favorites/v1/refresh_favorite_response.proto";
+import "findnmeet/favorites/v1/update_favorite_request.proto";
+import "findnmeet/favorites/v1/update_favorite_response.proto";
 
 service FavoritesService {
-  rpc CreateFavorite(.findnmeet.favorites.v1.create_favorite.CreateFavoriteRequest)
-      returns (.findnmeet.favorites.v1.create_favorite.CreateFavoriteResponse);
-  rpc GetFavorite(.findnmeet.favorites.v1.get_favorite.GetFavoriteRequest)
-      returns (.findnmeet.favorites.v1.get_favorite.GetFavoriteResponse);
-  rpc ListFavorites(.findnmeet.favorites.v1.list_favorites.ListFavoritesRequest)
-      returns (.findnmeet.favorites.v1.list_favorites.ListFavoritesResponse);
-  rpc UpdateFavorite(.findnmeet.favorites.v1.update_favorite.UpdateFavoriteRequest)
-      returns (.findnmeet.favorites.v1.update_favorite.UpdateFavoriteResponse);
-  rpc DeleteFavorite(.findnmeet.favorites.v1.delete_favorite.DeleteFavoriteRequest)
-      returns (.findnmeet.favorites.v1.delete_favorite.DeleteFavoriteResponse);
-  rpc RefreshFavorite(.findnmeet.favorites.v1.refresh_favorite.RefreshFavoriteRequest)
-      returns (.findnmeet.favorites.v1.refresh_favorite.RefreshFavoriteResponse);
+  rpc CreateFavorite(CreateFavoriteRequest)
+      returns (CreateFavoriteResponse);
+  rpc GetFavorite(GetFavoriteRequest)
+      returns (GetFavoriteResponse);
+  rpc ListFavorites(ListFavoritesRequest)
+      returns (ListFavoritesResponse);
+  rpc UpdateFavorite(UpdateFavoriteRequest)
+      returns (UpdateFavoriteResponse);
+  rpc DeleteFavorite(DeleteFavoriteRequest)
+      returns (DeleteFavoriteResponse);
+  rpc RefreshFavorite(RefreshFavoriteRequest)
+      returns (RefreshFavoriteResponse);
 }

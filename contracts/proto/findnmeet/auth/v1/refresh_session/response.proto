@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.refresh_session;
-
-import "findnmeet/auth/v1/session.proto";
-
-message RefreshSessionResponse {
-  Session session = 1;
-}

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.get_external_links;
-
-import "findnmeet/shared/v1/uuid.proto";
-
-message GetExternalLinksRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-}

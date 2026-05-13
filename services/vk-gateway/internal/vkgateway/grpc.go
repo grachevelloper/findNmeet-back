@@ -3,16 +3,14 @@ package vkgateway
 import (
 	"context"
 
-	exchangeoauthcodev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/exchange_oauth_code"
-	getprofilev1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/get_profile"
-	searchprofilesv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/search_profiles"
+	vkv1 "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1"
 	"google.golang.org/grpc"
 )
 
 type Server interface {
-	ExchangeOAuthCode(context.Context, *exchangeoauthcodev1.ExchangeOAuthCodeRequest) (*exchangeoauthcodev1.ExchangeOAuthCodeResponse, error)
-	GetProfile(context.Context, *getprofilev1.GetProfileRequest) (*getprofilev1.GetProfileResponse, error)
-	SearchProfiles(context.Context, *searchprofilesv1.SearchProfilesRequest) (*searchprofilesv1.SearchProfilesResponse, error)
+	ExchangeOAuthCode(context.Context, *vkv1.ExchangeOAuthCodeRequest) (*vkv1.ExchangeOAuthCodeResponse, error)
+	GetProfile(context.Context, *vkv1.GetProfileRequest) (*vkv1.GetProfileResponse, error)
+	SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error)
 }
 
 func RegisterVkGatewayServiceServer(registrar grpc.ServiceRegistrar, server Server) {
@@ -30,7 +28,7 @@ func RegisterVkGatewayServiceServer(registrar grpc.ServiceRegistrar, server Serv
 }
 
 func exchangeOAuthCodeHandler(server any, ctx context.Context, decode func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
-	request := new(exchangeoauthcodev1.ExchangeOAuthCodeRequest)
+	request := new(vkv1.ExchangeOAuthCodeRequest)
 	if err := decode(request); err != nil {
 		return nil, err
 	}
@@ -40,14 +38,14 @@ func exchangeOAuthCodeHandler(server any, ctx context.Context, decode func(any) 
 
 	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/ExchangeOAuthCode"}
 	handler := func(ctx context.Context, req any) (any, error) {
-		return server.(Server).ExchangeOAuthCode(ctx, req.(*exchangeoauthcodev1.ExchangeOAuthCodeRequest))
+		return server.(Server).ExchangeOAuthCode(ctx, req.(*vkv1.ExchangeOAuthCodeRequest))
 	}
 
 	return interceptor(ctx, request, info, handler)
 }
 
 func getProfileHandler(server any, ctx context.Context, decode func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
-	request := new(getprofilev1.GetProfileRequest)
+	request := new(vkv1.GetProfileRequest)
 	if err := decode(request); err != nil {
 		return nil, err
 	}
@@ -57,14 +55,14 @@ func getProfileHandler(server any, ctx context.Context, decode func(any) error, 
 
 	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/GetProfile"}
 	handler := func(ctx context.Context, req any) (any, error) {
-		return server.(Server).GetProfile(ctx, req.(*getprofilev1.GetProfileRequest))
+		return server.(Server).GetProfile(ctx, req.(*vkv1.GetProfileRequest))
 	}
 
 	return interceptor(ctx, request, info, handler)
 }
 
 func searchProfilesHandler(server any, ctx context.Context, decode func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
-	request := new(searchprofilesv1.SearchProfilesRequest)
+	request := new(vkv1.SearchProfilesRequest)
 	if err := decode(request); err != nil {
 		return nil, err
 	}
@@ -74,7 +72,7 @@ func searchProfilesHandler(server any, ctx context.Context, decode func(any) err
 
 	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/SearchProfiles"}
 	handler := func(ctx context.Context, req any) (any, error) {
-		return server.(Server).SearchProfiles(ctx, req.(*searchprofilesv1.SearchProfilesRequest))
+		return server.(Server).SearchProfiles(ctx, req.(*vkv1.SearchProfilesRequest))
 	}
 
 	return interceptor(ctx, request, info, handler)
