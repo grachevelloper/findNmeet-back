@@ -4,8 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
+
+	"github.com/findnmeet/vk-gateway/internal/config"
+	"github.com/findnmeet/vk-gateway/internal/vkapi"
+	"github.com/findnmeet/vk-gateway/internal/vkgateway"
+	"google.golang.org/grpc"
 )
 
 type HealthResponse struct {
@@ -19,14 +24,33 @@ func healthHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func main() {
-	port := os.Getenv("VK_GATEWAY_PORT")
-	if port == "" {
-		port = "8080"
+	cfg := config.FromEnv()
+	client := vkapi.NewClient(vkapi.Config{
+		AppID:      cfg.VKAppID,
+		AppSecret:  cfg.VKAppSecret,
+		APIVersion: cfg.VKAPIVersion,
+		OAuthURL:   cfg.VKOAuthURL,
+		APIURL:     cfg.VKAPIURL,
+		Timeout:    cfg.HTTPTimeout,
+	})
+
+	grpcListener, err := net.Listen("tcp", cfg.GRPCAddress)
+	if err != nil {
+		log.Fatalf("failed to listen on %s: %v", cfg.GRPCAddress, err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthHandler)
+	grpcServer := grpc.NewServer()
+	vkgateway.RegisterVkGatewayServiceServer(grpcServer, vkgateway.NewService(client))
 
-	fmt.Printf("vk-gateway running on port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	go func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/health", healthHandler)
+		fmt.Printf("vk-gateway health server running on %s\n", cfg.HTTPAddress)
+		if err := http.ListenAndServe(cfg.HTTPAddress, mux); err != nil {
+			log.Fatalf("health server failed: %v", err)
+		}
+	}()
+
+	fmt.Printf("vk-gateway gRPC server running on %s\n", cfg.GRPCAddress)
+	log.Fatal(grpcServer.Serve(grpcListener))
 }
