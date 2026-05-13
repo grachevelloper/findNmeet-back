@@ -1,0 +1,14 @@
+version: v2
+clean: true
+plugins:
+  - local: protoc-gen-go
+    out: services/vk-gateway/internal/gen
+    opt:
+      - paths=source_relative
+inputs:
+  - directory: contracts/proto
+    paths:
+      - contracts/proto/findnmeet/shared/v1
+      - contracts/proto/findnmeet/vk/v1
+    exclude_paths:
+      - contracts/proto/findnmeet/vk/v1/service.proto

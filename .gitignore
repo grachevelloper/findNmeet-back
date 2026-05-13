@@ -12,3 +12,7 @@ packages/ts-types/.gen/
 
 # Go
 services/vk-gateway/bin/
+
+# AI
+.agents
+skills-lock.json
