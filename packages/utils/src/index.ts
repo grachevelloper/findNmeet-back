@@ -1,37 +1,6 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 100;
-
-export function buildHealthResponse(service: string): { status: 'ok'; service: string } {
-  return { status: 'ok', service };
-}
-
-export function getDefaultPageSize(): number {
-  return DEFAULT_PAGE_SIZE;
-}
-
-export function getMaxPageSize(): number {
-  return MAX_PAGE_SIZE;
-}
-
-export function missingUserContext(): UnauthorizedException {
-  return new UnauthorizedException(errorResponse('missing_user_context', 'X-User-Id header is required'));
-}
-
-export function missingRequiredField(fieldName: string): BadRequestException {
-  return new BadRequestException(errorResponse('missing_required_field', `${fieldName} is required`));
-}
-
-export function invalidExternalId(fieldName: string): BadRequestException {
-  return new BadRequestException(errorResponse('invalid_external_id', `${fieldName} must be a VK numeric id`));
-}
-
-function errorResponse(code: string, message: string) {
-  return {
-    error: {
-      code,
-      message,
-    },
-  };
-}
+export * from './config/postgres';
+export * from './errors/http-errors';
+export * from './grpc/health';
+export * from './grpc/rpc-errors';
+export * from './health/health-response';
+export * from './pagination/page-size';
