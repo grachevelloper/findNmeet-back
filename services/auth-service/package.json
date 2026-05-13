@@ -3,20 +3,32 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "nest build",
-    "dev": "nest start --watch",
-    "start:prod": "node dist/main",
+    "predev": "pnpm --filter @findnmeet/ts-types build && pnpm --filter @findnmeet/utils build",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "prebuild": "pnpm --filter @findnmeet/ts-types build && pnpm --filter @findnmeet/utils build",
+    "build": "tsc",
+    "start:prod": "node dist/index.js",
+    "migration:run": "pnpm build && typeorm migration:run -d dist/data-source.js",
+    "migration:revert": "pnpm build && typeorm migration:revert -d dist/data-source.js",
+    "pretest": "pnpm --filter @findnmeet/ts-types build",
     "test": "jest",
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@findnmeet/types": "workspace:*",
+    "@bufbuild/protobuf": "^2.12.0",
+    "@findnmeet/ts-types": "workspace:*",
     "@findnmeet/utils": "workspace:*",
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.8.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/microservices": "^11.1.19",
+    "@nestjs/typeorm": "^11.0.1",
+    "grpc-health-check": "^2.1.0",
+    "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.29"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -30,18 +42,21 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3"
   },
   "jest": {
     "moduleFileExtensions": ["js", "json", "ts"],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": { "^.+\\.ts$": "ts-jest" },
     "moduleNameMapper": {
-      "^@findnmeet/types$": "<rootDir>/../../../packages/types/src",
-      "^@findnmeet/types/(.*)$": "<rootDir>/../../../packages/types/src/$1",
-      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src"
+      "^@findnmeet/ts-types$": "<rootDir>/../../packages/ts-types/dist/src",
+      "^@findnmeet/ts-types/(.*)$": "<rootDir>/../../packages/ts-types/dist/src/$1",
+      "^@findnmeet/types$": "<rootDir>/../../packages/types/src",
+      "^@findnmeet/utils$": "<rootDir>/../../packages/utils/src",
+      "^@findnmeet/utils/(.*)$": "<rootDir>/../../packages/utils/src/$1"
     },
     "collectCoverageFrom": ["**/*.(t|j)s"],
     "coverageDirectory": "../coverage",
