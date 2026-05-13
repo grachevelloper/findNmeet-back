@@ -17,7 +17,7 @@ import (
 )
 
 type VKClient interface {
-	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string) (string, *vkv1.VkOAuthTokens, error)
+	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error)
 	GetProfile(ctx context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error)
 }
 
@@ -39,7 +39,7 @@ func (s *Service) ExchangeOAuthCode(ctx context.Context, req *exchangeoauthcodev
 		return nil, status.Error(codes.InvalidArgument, "redirect_uri is required")
 	}
 
-	externalID, tokens, err := s.client.ExchangeOAuthCode(ctx, code, redirectURI)
+	externalID, tokens, err := s.client.ExchangeOAuthCode(ctx, code, redirectURI, strings.TrimSpace(req.GetCodeVerifier()))
 	if err != nil {
 		return nil, grpcError(err)
 	}

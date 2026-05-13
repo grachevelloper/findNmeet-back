@@ -2,8 +2,7 @@ import { join } from 'path';
 import { protoPath as healthCheckProtoPath } from 'grpc-health-check';
 import { Transport } from '@nestjs/microservices';
 import type { GrpcOptions } from '@nestjs/microservices';
-
-import { registerHealthCheck } from '../health/register-health-check';
+import { registerGrpcHealthCheck } from '@findnmeet/utils';
 
 export function favoritesGrpcOptions(): GrpcOptions {
   return {
@@ -15,7 +14,8 @@ export function favoritesGrpcOptions(): GrpcOptions {
       loader: {
         includeDirs: [join(process.cwd(), 'contracts/proto')],
       },
-      onLoadPackageDefinition: (_packageDefinition, server) => registerHealthCheck(server),
+      onLoadPackageDefinition: (_packageDefinition, server) =>
+        registerGrpcHealthCheck(server, 'findnmeet.favorites.v1.FavoritesService'),
     },
   };
 }

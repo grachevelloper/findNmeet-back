@@ -19,15 +19,17 @@ import (
 type fakeVKClient struct {
 	exchangedCode        string
 	exchangedRedirectURI string
+	exchangedVerifier    string
 	profileLookup        string
 	profileAccessToken   string
 	exchangeErr          error
 	profileErr           error
 }
 
-func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string) (string, *vkv1.VkOAuthTokens, error) {
+func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
 	f.exchangedCode = code
 	f.exchangedRedirectURI = redirectURI
+	f.exchangedVerifier = codeVerifier
 	if f.exchangeErr != nil {
 		return "", nil, f.exchangeErr
 	}

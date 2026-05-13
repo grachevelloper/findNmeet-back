@@ -25,6 +25,7 @@ type ExchangeOAuthCodeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
 	RedirectUri   string                 `protobuf:"bytes,2,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty"`
+	CodeVerifier  string                 `protobuf:"bytes,3,opt,name=code_verifier,json=codeVerifier,proto3" json:"code_verifier,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,14 +74,22 @@ func (x *ExchangeOAuthCodeRequest) GetRedirectUri() string {
 	return ""
 }
 
+func (x *ExchangeOAuthCodeRequest) GetCodeVerifier() string {
+	if x != nil {
+		return x.CodeVerifier
+	}
+	return ""
+}
+
 var File_findnmeet_vk_v1_exchange_oauth_code_request_proto protoreflect.FileDescriptor
 
 const file_findnmeet_vk_v1_exchange_oauth_code_request_proto_rawDesc = "" +
 	"\n" +
-	"1findnmeet/vk/v1/exchange_oauth_code/request.proto\x12#findnmeet.vk.v1.exchange_oauth_code\"Q\n" +
+	"1findnmeet/vk/v1/exchange_oauth_code/request.proto\x12#findnmeet.vk.v1.exchange_oauth_code\"v\n" +
 	"\x18ExchangeOAuthCodeRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12!\n" +
-	"\fredirect_uri\x18\x02 \x01(\tR\vredirectUriBfZdgithub.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/exchange_oauth_code;exchangeoauthcodev1b\x06proto3"
+	"\fredirect_uri\x18\x02 \x01(\tR\vredirectUri\x12#\n" +
+	"\rcode_verifier\x18\x03 \x01(\tR\fcodeVerifierBfZdgithub.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1/exchange_oauth_code;exchangeoauthcodev1b\x06proto3"
 
 var (
 	file_findnmeet_vk_v1_exchange_oauth_code_request_proto_rawDescOnce sync.Once

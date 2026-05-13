@@ -57,7 +57,7 @@ func NewClient(cfg Config) *Client {
 	}
 }
 
-func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI string) (string, *vkv1.VkOAuthTokens, error) {
+func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
 	if c.appID == "" || c.appSecret == "" {
 		return "", nil, fmt.Errorf("%w: VK_APP_ID and VK_APP_SECRET are required", ErrInvalidConfig)
 	}
@@ -72,6 +72,9 @@ func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI
 	query.Set("client_secret", c.appSecret)
 	query.Set("redirect_uri", redirectURI)
 	query.Set("code", code)
+	if codeVerifier != "" {
+		query.Set("code_verifier", codeVerifier)
+	}
 	endpoint.RawQuery = query.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
