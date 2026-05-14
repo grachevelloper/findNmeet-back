@@ -8,7 +8,7 @@ import {
 import { AuthResult } from '@findnmeet/ts-types/auth/v1';
 import { SensitiveStringSchema, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
-import { AuthGrpcController } from '../src/grpc/controllers/auth-grpc.controller';
+import { AuthGrpcController } from '../src/interfaces/grpc/controllers/auth-grpc.controller';
 import { AuthApplicationService } from '../src/auth/application/auth.service';
 import { UserStatus } from '../src/auth/domain/models/user-status';
 import { Provider } from '../src/auth/domain/models/provider';

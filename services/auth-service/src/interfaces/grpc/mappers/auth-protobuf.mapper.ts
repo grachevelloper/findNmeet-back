@@ -26,8 +26,8 @@ import type {
   RevokeSessionRequest,
   RevokeSessionResponse,
   Session,
-  User,
-  UserExternalLink,
+  User as ProtoUser,
+  UserExternalLink as ProtoUserExternalLink,
 } from '@findnmeet/ts-types/auth/v1';
 import { Provider, SensitiveStringSchema, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
@@ -35,11 +35,11 @@ import type {
   AuthenticatedUserResult,
   CompleteVkOAuthResult,
   RefreshSessionResult,
-} from '../../auth/application/contracts/auth.results';
-import type { AuthSession } from '../../auth/domain/models/auth-session';
-import { UserStatus as DomainUserStatus } from '../../auth/domain/models/user-status';
-import type { UserExternalLinkEntity } from '../../auth/infrastructure/persistence/user-external-link.entity';
-import type { UserEntity } from '../../auth/infrastructure/persistence/user.entity';
+} from '../../../auth/application/contracts/auth.results';
+import type { AuthSession } from '../../../auth/domain/models/auth-session';
+import type { UserExternalLink as DomainUserExternalLink } from '../../../auth/domain/models/user-external-link';
+import type { User as DomainUser } from '../../../auth/domain/models/user';
+import { UserStatus as DomainUserStatus } from '../../../auth/domain/models/user-status';
 
 export function completeVkOAuthCommandFromProto(request: CompleteVkOAuthRequest) {
   return {
@@ -70,7 +70,7 @@ export function getUserResponseToProto(result: AuthenticatedUserResult): GetUser
   return create(GetUserResponseSchema, { user: authenticatedUserToProto(result) });
 }
 
-export function getExternalLinksResponseToProto(externalLinks: UserExternalLinkEntity[]): GetExternalLinksResponse {
+export function getExternalLinksResponseToProto(externalLinks: DomainUserExternalLink[]): GetExternalLinksResponse {
   return create(GetExternalLinksResponseSchema, { externalLinks: externalLinks.map(externalLinkToProto) });
 }
 
@@ -89,7 +89,7 @@ function authenticatedUserToProto(result: AuthenticatedUserResult): Authenticate
   });
 }
 
-function userToProto(user: UserEntity): User {
+function userToProto(user: DomainUser): ProtoUser {
   return create(UserSchema, {
     id: create(UuidSchema, { value: user.id }),
     createdAt: timestampFromDate(user.createdAt),
@@ -99,7 +99,7 @@ function userToProto(user: UserEntity): User {
   });
 }
 
-function externalLinkToProto(link: UserExternalLinkEntity): UserExternalLink {
+function externalLinkToProto(link: DomainUserExternalLink): ProtoUserExternalLink {
   return create(UserExternalLinkSchema, {
     id: create(UuidSchema, { value: link.id }),
     userId: create(UuidSchema, { value: link.userId }),

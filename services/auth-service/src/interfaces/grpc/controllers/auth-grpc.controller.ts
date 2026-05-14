@@ -13,7 +13,7 @@ import type {
   RevokeSessionResponse,
 } from '@findnmeet/ts-types/auth/v1';
 
-import { AuthApplicationService } from '../../auth/application/auth.service';
+import { AuthApplicationService } from '../../../auth/application/auth.service';
 import {
   completeVkOAuthCommandFromProto,
   completeVkOAuthResponseToProto,

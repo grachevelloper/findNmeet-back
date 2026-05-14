@@ -1,6 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-
-import { UserExternalLinkEntity } from './user-external-link.entity';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'auth_tokens' })
 export class AuthTokenEntity {
@@ -9,10 +7,6 @@ export class AuthTokenEntity {
 
   @Column('uuid', { name: 'external_link_id', unique: true })
   externalLinkId!: string;
-
-  @OneToOne(() => UserExternalLinkEntity)
-  @JoinColumn({ name: 'external_link_id' })
-  externalLink?: UserExternalLinkEntity;
 
   @Column('text', { name: 'access_token_ciphertext' })
   accessTokenCiphertext!: string;

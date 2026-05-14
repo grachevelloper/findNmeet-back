@@ -62,22 +62,20 @@ func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI
 		return "", nil, fmt.Errorf("%w: VK_APP_ID and VK_APP_SECRET are required", ErrInvalidConfig)
 	}
 
-	endpoint, err := url.Parse(c.oauthURL + "/access_token")
+	endpoint, err := buildURL(c.oauthURL, "/access_token", func(query url.Values) {
+		query.Set("client_id", c.appID)
+		query.Set("client_secret", c.appSecret)
+		query.Set("redirect_uri", redirectURI)
+		query.Set("code", code)
+		if codeVerifier != "" {
+			query.Set("code_verifier", codeVerifier)
+		}
+	})
 	if err != nil {
 		return "", nil, err
 	}
 
-	query := endpoint.Query()
-	query.Set("client_id", c.appID)
-	query.Set("client_secret", c.appSecret)
-	query.Set("redirect_uri", redirectURI)
-	query.Set("code", code)
-	if codeVerifier != "" {
-		query.Set("code_verifier", codeVerifier)
-	}
-	endpoint.RawQuery = query.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+	req, err := newGetRequest(ctx, endpoint)
 	if err != nil {
 		return "", nil, err
 	}
@@ -107,19 +105,17 @@ func (c *Client) GetProfile(ctx context.Context, lookup string, accessToken stri
 		return nil, ErrUnauthorized
 	}
 
-	endpoint, err := url.Parse(c.apiURL + "/method/users.get")
+	endpoint, err := buildURL(c.apiURL, "/method/users.get", func(query url.Values) {
+		query.Set("user_ids", lookup)
+		query.Set("fields", "screen_name,photo_200,city,country,home_town,education,graduation,bdate,online,last_seen,relation,can_write_private_message,is_closed")
+		query.Set("access_token", accessToken)
+		query.Set("v", c.apiVersion)
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	query := endpoint.Query()
-	query.Set("user_ids", lookup)
-	query.Set("fields", "screen_name,photo_200,city,country,home_town,education,graduation,bdate,online,last_seen,relation,can_write_private_message,is_closed")
-	query.Set("access_token", accessToken)
-	query.Set("v", c.apiVersion)
-	endpoint.RawQuery = query.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+	req, err := newGetRequest(ctx, endpoint)
 	if err != nil {
 		return nil, err
 	}

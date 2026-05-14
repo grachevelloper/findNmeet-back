@@ -7,8 +7,10 @@ import { create } from '@bufbuild/protobuf';
 import { AuthResult } from '@findnmeet/ts-types/auth/v1';
 import { ExchangeOAuthCodeRequestSchema } from '@findnmeet/ts-types/vk/v1';
 
-import { disabledUser, invalidRefreshToken, missingRequiredField, userNotFound } from '../domain/errors/auth-errors';
+import { disabledUser, invalidRefreshToken, missingRequiredField, userNotFound } from './errors/auth.errors';
+import { toDomainExternalLink, toDomainUser } from './mappers/auth-domain.mapper';
 import { Provider } from '../domain/models/provider';
+import type { UserExternalLink } from '../domain/models/user-external-link';
 import { UserStatus } from '../domain/models/user-status';
 import type { AuthenticatedUserResult, CompleteVkOAuthResult, RefreshSessionResult } from './contracts/auth.results';
 import { AuthSessionEntity } from '../infrastructure/persistence/auth-session.entity';
@@ -119,7 +121,12 @@ export class AuthApplicationService {
     const session = await this.createSession(user.id, now);
     const externalLinks = await this.externalLinks.findBy({ userId: user.id });
 
-    return { user, externalLinks, session, result };
+    return {
+      user: toDomainUser(user),
+      externalLinks: externalLinks.map(toDomainExternalLink),
+      session,
+      result,
+    };
   }
 
   async getUser(userId?: string): Promise<AuthenticatedUserResult> {
@@ -133,15 +140,19 @@ export class AuthApplicationService {
     }
 
     const externalLinks = await this.externalLinks.findBy({ userId });
-    return { user, externalLinks };
+    return {
+      user: toDomainUser(user),
+      externalLinks: externalLinks.map(toDomainExternalLink),
+    };
   }
 
-  async getExternalLinks(userId?: string): Promise<UserExternalLinkEntity[]> {
+  async getExternalLinks(userId?: string): Promise<UserExternalLink[]> {
     if (!userId) {
       throw missingRequiredField('user_id');
     }
 
-    return this.externalLinks.findBy({ userId });
+    const externalLinks = await this.externalLinks.findBy({ userId });
+    return externalLinks.map(toDomainExternalLink);
   }
 
   async refreshSession(refreshToken?: string): Promise<RefreshSessionResult> {
