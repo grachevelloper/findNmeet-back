@@ -7,6 +7,9 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "dependencies": {
+    "@findnmeet/ts-types": "workspace:*"
+  },
   "peerDependencies": {
     "@grpc/grpc-js": "^1.13.4",
     "@nestjs/common": "^11.0.1",

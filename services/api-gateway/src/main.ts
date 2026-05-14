@@ -1,17 +1,33 @@
 import 'reflect-metadata';
-import { NestFactory } from "@nestjs/core";
-import { Transport } from "@nestjs/microservices";
-import { AppModule } from "./app.module";
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
+
+import { AppModule } from './app.module';
+import { corsOptions } from './config/cors.options';
+import { httpsOptions } from './config/https.options';
 
 async function bootstrap() {
-const app = await NestFactory.createMicroservice(AppModule, {
-    transport: Transport.TCP,
-    options: {
-      host: "127.0.0.1",
-      port: 8888
-    }
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions: httpsOptions(),
   });
+
+  app.setGlobalPrefix('api/v1', { exclude: ['health'] });
+  app.use(cookieParser());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+  app.enableCors(corsOptions());
+
+  const port = Number(process.env.API_GATEWAY_PORT ?? 3000);
+  await app.listen(port);
+
+  const logger = new Logger('ApiGatewayBootstrap');
+  logger.log(`api-gateway listening on port ${port}`);
 }
 
-bootstrap();
+void bootstrap();

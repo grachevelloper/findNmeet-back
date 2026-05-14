@@ -4,7 +4,6 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@findnmeet/types": ["../../packages/types/dist"],
       "@findnmeet/utils": ["../../packages/utils/dist"]
     }
   },

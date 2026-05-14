@@ -54,7 +54,6 @@
     "moduleNameMapper": {
       "^@findnmeet/ts-types$": "<rootDir>/../../packages/ts-types/dist/src",
       "^@findnmeet/ts-types/(.*)$": "<rootDir>/../../packages/ts-types/dist/src/$1",
-      "^@findnmeet/types$": "<rootDir>/../../packages/types/src",
       "^@findnmeet/utils$": "<rootDir>/../../packages/utils/src",
       "^@findnmeet/utils/(.*)$": "<rootDir>/../../packages/utils/src/$1"
     },

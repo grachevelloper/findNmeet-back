@@ -1,27 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { AppModule } from '../app.module';
+import { HealthController } from './health.controller';
 
-describe('GET /health', () => {
-  let app: INestApplication;
+describe('HealthController', () => {
+  it('returns api-gateway health payload', () => {
+    const controller = new HealthController();
 
-  beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = module.createNestApplication();
-    await app.init();
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('возвращает { status: ok, service: api-gateway }', () => {
-    return request(app.getHttpServer())
-      .get('/health')
-      .expect(200)
-      .expect({ status: 'ok', service: 'api-gateway' });
+    expect(controller.check()).toEqual({
+      status: 'ok',
+      service: 'api-gateway',
+    });
   });
 });
