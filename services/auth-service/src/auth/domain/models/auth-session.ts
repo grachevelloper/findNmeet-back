@@ -1,5 +1,9 @@
 export type AuthSession = {
-  accessToken: string;
-  refreshToken: string;
+  id: string;
+  userId: string;
+  refreshTokenHash: string;
   expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  revokedAt: Date | null;
 };

@@ -9,27 +9,35 @@ import { AuthResult } from '@findnmeet/ts-types/auth/v1';
 import { SensitiveStringSchema, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
 import { AuthGrpcController } from '../src/interfaces/grpc/controllers/auth-grpc.controller';
-import { AuthApplicationService } from '../src/auth/application/auth.service';
+import { CompleteVkOAuthUseCase } from '../src/auth/application/use-cases/complete-vk-oauth.use-case';
+import { GetExternalLinksUseCase } from '../src/auth/application/use-cases/get-external-links.use-case';
+import { GetUserUseCase } from '../src/auth/application/use-cases/get-user.use-case';
+import { RefreshSessionUseCase } from '../src/auth/application/use-cases/refresh-session.use-case';
+import { RevokeSessionUseCase } from '../src/auth/application/use-cases/revoke-session.use-case';
 import { UserStatus } from '../src/auth/domain/models/user-status';
 import { Provider } from '../src/auth/domain/models/provider';
 
 describe('AuthGrpcController', () => {
   const now = new Date('2026-05-13T10:00:00.000Z');
-  const authService = {
-    completeVkOAuth: jest.fn(),
-    getUser: jest.fn(),
-    getExternalLinks: jest.fn(),
-    refreshSession: jest.fn(),
-    revokeSession: jest.fn(),
-  };
-  const controller = new AuthGrpcController(authService as unknown as AuthApplicationService);
+  const completeVkOAuthUseCase = { execute: jest.fn() };
+  const getUserUseCase = { execute: jest.fn() };
+  const getExternalLinksUseCase = { execute: jest.fn() };
+  const refreshSessionUseCase = { execute: jest.fn() };
+  const revokeSessionUseCase = { execute: jest.fn() };
+  const controller = new AuthGrpcController(
+    completeVkOAuthUseCase as unknown as CompleteVkOAuthUseCase,
+    getUserUseCase as unknown as GetUserUseCase,
+    getExternalLinksUseCase as unknown as GetExternalLinksUseCase,
+    refreshSessionUseCase as unknown as RefreshSessionUseCase,
+    revokeSessionUseCase as unknown as RevokeSessionUseCase,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('completes VK OAuth and maps session/user to protobuf', async () => {
-    authService.completeVkOAuth.mockResolvedValue({
+    completeVkOAuthUseCase.execute.mockResolvedValue({
       user: {
         id: '550e8400-e29b-41d4-a716-446655440000',
         createdAt: now,
@@ -65,7 +73,7 @@ describe('AuthGrpcController', () => {
       }),
     );
 
-    expect(authService.completeVkOAuth).toHaveBeenCalledWith({
+    expect(completeVkOAuthUseCase.execute).toHaveBeenCalledWith({
       code: 'oauth-code',
       state: 'state',
       redirectUri: 'http://localhost:3000/auth/vk/callback',
@@ -78,7 +86,7 @@ describe('AuthGrpcController', () => {
   });
 
   it('refreshes and revokes session by sensitive refresh token', async () => {
-    authService.refreshSession.mockResolvedValue({
+    refreshSessionUseCase.execute.mockResolvedValue({
       session: {
         accessToken: 'next-access.jwt',
         refreshToken: 'next-refresh',
@@ -97,13 +105,13 @@ describe('AuthGrpcController', () => {
       }),
     );
 
-    expect(authService.refreshSession).toHaveBeenCalledWith('refresh');
+    expect(refreshSessionUseCase.execute).toHaveBeenCalledWith({ refreshToken: 'refresh' });
     expect(refreshResponse.session?.refreshToken?.value).toBe('next-refresh');
-    expect(authService.revokeSession).toHaveBeenCalledWith('next-refresh');
+    expect(revokeSessionUseCase.execute).toHaveBeenCalledWith({ refreshToken: 'next-refresh' });
   });
 
   it('gets user by uuid wrapper', async () => {
-    authService.getUser.mockResolvedValue({
+    getUserUseCase.execute.mockResolvedValue({
       user: {
         id: '550e8400-e29b-41d4-a716-446655440000',
         createdAt: now,
@@ -118,6 +126,6 @@ describe('AuthGrpcController', () => {
       userId: create(UuidSchema, { value: '550e8400-e29b-41d4-a716-446655440000' }),
     }));
 
-    expect(authService.getUser).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
+    expect(getUserUseCase.execute).toHaveBeenCalledWith({ userId: '550e8400-e29b-41d4-a716-446655440000' });
   });
 });

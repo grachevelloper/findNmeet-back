@@ -1,16 +1,8 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-
-import { AppModule } from './app.module';
-import { authGrpcOptions } from './interfaces/grpc/config/auth-grpc.options';
-import { HttpExceptionRpcFilter } from './interfaces/grpc/filters/http-exception-rpc.filter';
+import { bootstrapGrpcServer } from './bootstrap/grpc-server';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(AppModule, authGrpcOptions());
-
-  app.useGlobalFilters(new HttpExceptionRpcFilter());
-
-  await app.listen();
+  await bootstrapGrpcServer();
   console.log('auth-service gRPC transport is listening');
 }
 

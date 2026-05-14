@@ -2,25 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { entityToFavoriteRecord } from './entity-to-favorite-record';
+import { entityToFavorite } from './entity-to-favorite-record';
 import { FavoriteEntity } from './favorite.entity';
 import { favoriteToEntity } from './favorite-to-entity';
 import { providerToCode } from './provider-code.mapper';
 import type { Favorite } from '../../domain/models/favorite';
 import type { FavoriteProvider } from '../../domain/models/favorite-provider';
-import type { FavoriteRecord } from '../../application/ports/favorite-record.type';
-import type { FavoritesRepository } from '../../application/ports/favorites.repository';
+import { FavoritesRepository } from '../../domain/ports/favorites.repository';
 
 @Injectable()
-export class TypeOrmFavoritesRepository implements FavoritesRepository {
+export class TypeOrmFavoritesRepository extends FavoritesRepository {
   constructor(
     @InjectRepository(FavoriteEntity)
     private readonly repository: Repository<FavoriteEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  async findById(favoriteId: string): Promise<FavoriteRecord | undefined> {
+  async findById(favoriteId: string): Promise<Favorite | undefined> {
     const entity = await this.repository.findOneBy({ id: favoriteId });
-    return entity ? entityToFavoriteRecord(entity) : undefined;
+    return entity ? entityToFavorite(entity) : undefined;
   }
 
   async findDuplicateFavoriteId(
@@ -40,7 +41,7 @@ export class TypeOrmFavoritesRepository implements FavoritesRepository {
     return entity?.id;
   }
 
-  async listByOwner(userId: string, provider?: FavoriteProvider): Promise<FavoriteRecord[]> {
+  async listByOwner(userId: string, provider?: FavoriteProvider): Promise<Favorite[]> {
     const entities = await this.repository.find({
       where: {
         userId,
@@ -51,11 +52,11 @@ export class TypeOrmFavoritesRepository implements FavoritesRepository {
       },
     });
 
-    return entities.map(entityToFavoriteRecord);
+    return entities.map(entityToFavorite);
   }
 
-  async save(favorite: Favorite, ownerId: string): Promise<void> {
-    await this.repository.save(favoriteToEntity(favorite, ownerId));
+  async save(favorite: Favorite): Promise<void> {
+    await this.repository.save(favoriteToEntity(favorite));
   }
 
   async delete(favorite: Favorite): Promise<void> {

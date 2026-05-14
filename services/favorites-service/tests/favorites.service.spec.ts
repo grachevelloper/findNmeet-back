@@ -1,14 +1,14 @@
 import { FavoriteProvider } from '../src/favorites/domain/models/favorite-provider';
-import { FavoritesApplicationService } from '../src/favorites/application/favorites.service';
+import { CreateFavoriteUseCase } from '../src/favorites/application/use-cases/create-favorite.use-case';
 import { createRepositoryFake } from './__fixtures__/favorites';
 
 const ownerId = '550e8400-e29b-41d4-a716-446655440000';
 
-describe('FavoritesApplicationService', () => {
-  let service: FavoritesApplicationService;
+describe('CreateFavoriteUseCase', () => {
+  let useCase: CreateFavoriteUseCase;
 
   beforeEach(() => {
-    service = new FavoritesApplicationService(createRepositoryFake());
+    useCase = new CreateFavoriteUseCase(createRepositoryFake());
   });
 
   it('enforces unique user/provider/external id', async () => {
@@ -18,18 +18,19 @@ describe('FavoritesApplicationService', () => {
       note: '',
     };
 
-    await service.createFavorite(ownerId, command);
+    await useCase.execute(ownerId, command);
 
-    await expect(service.createFavorite(ownerId, command)).rejects.toThrow(expect.objectContaining({ status: 409 }));
+    await expect(useCase.execute(ownerId, command)).rejects.toThrow(expect.objectContaining({ status: 409 }));
   });
 
   it('keeps favorites scoped by owner', async () => {
-    const favorite = await service.createFavorite(ownerId, {
+    const favorite = await useCase.execute(ownerId, {
       provider: FavoriteProvider.VK,
       externalId: '456',
       note: '',
     });
 
     expect(favorite.externalId).toBe('456');
+    expect(favorite.ownerId).toBe(ownerId);
   });
 });

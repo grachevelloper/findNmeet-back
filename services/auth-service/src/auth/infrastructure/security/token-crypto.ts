@@ -1,14 +1,19 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { Injectable } from '@nestjs/common';
+
+import { TokenCipher } from '../../application/ports/token-cipher';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_BYTES = 12;
 const TAG_BYTES = 16;
 
-export class TokenCrypto {
+@Injectable()
+export class TokenCrypto extends TokenCipher {
   private readonly key: Buffer;
   readonly keyId = 'default';
 
   constructor(secret = process.env.TOKEN_ENCRYPTION_KEY) {
+    super();
     if (!secret && process.env.NODE_ENV === 'production') {
       throw new Error('TOKEN_ENCRYPTION_KEY is required in production');
     }

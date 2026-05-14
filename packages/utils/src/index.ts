@@ -2,6 +2,7 @@ export * from './auth/oauth-flow';
 export * from './config/postgres';
 export * from './errors/http-errors';
 export * from './grpc/health';
+export * from './grpc/http-exception-rpc.filter';
 export * from './grpc/rpc-errors';
 export * from './health/health-response';
 export * from './http/auth-response';

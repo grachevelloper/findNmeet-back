@@ -33,10 +33,10 @@ import { Provider, SensitiveStringSchema, UuidSchema } from '@findnmeet/ts-types
 
 import type {
   AuthenticatedUserResult,
-  CompleteVkOAuthResult,
-  RefreshSessionResult,
-} from '../../../auth/application/contracts/auth.results';
-import type { AuthSession } from '../../../auth/domain/models/auth-session';
+} from '../../../auth/application/dto/authenticated-user.result';
+import type { CompleteVkOAuthResult } from '../../../auth/application/dto/complete-vk-oauth.result';
+import type { RefreshSessionResult } from '../../../auth/application/dto/refresh-session.result';
+import type { IssuedSession } from '../../../auth/application/dto/issued-session.dto';
 import type { UserExternalLink as DomainUserExternalLink } from '../../../auth/domain/models/user-external-link';
 import type { User as DomainUser } from '../../../auth/domain/models/user';
 import { UserStatus as DomainUserStatus } from '../../../auth/domain/models/user-status';
@@ -114,7 +114,7 @@ function externalLinkToProto(link: DomainUserExternalLink): ProtoUserExternalLin
   });
 }
 
-function sessionToProto(session: AuthSession): Session {
+function sessionToProto(session: IssuedSession): Session {
   return create(SessionSchema, {
     accessToken: create(SensitiveStringSchema, { value: session.accessToken }),
     refreshToken: create(SensitiveStringSchema, { value: session.refreshToken }),

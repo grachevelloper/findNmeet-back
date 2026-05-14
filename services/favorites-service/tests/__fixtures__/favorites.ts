@@ -11,8 +11,7 @@ import { Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
 import type { Favorite } from '../../src/favorites/domain/models/favorite';
 import { FavoriteProvider } from '../../src/favorites/domain/models/favorite-provider';
-import type { FavoriteRecord } from '../../src/favorites/application/ports/favorite-record.type';
-import type { FavoritesRepository } from '../../src/favorites/application/ports/favorites.repository';
+import { FavoritesRepository } from '../../src/favorites/domain/ports/favorites.repository';
 
 export const userId = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -43,7 +42,7 @@ export function favoriteIdRequest<T extends GetFavoriteRequest | DeleteFavoriteR
 }
 
 export function createRepositoryFake(): FavoritesRepository {
-  const favorites = new Map<string, FavoriteRecord>();
+  const favorites = new Map<string, Favorite>();
 
   return {
     async findById(favoriteId: string) {
@@ -59,17 +58,13 @@ export function createRepositoryFake(): FavoritesRepository {
       return [...favorites.values()]
         .filter((favorite) => favorite.ownerId === ownerId)
         .filter((favorite) => provider === undefined || favorite.provider === provider)
-        .sort((a, b) => b.sortKey - a.sortKey);
+        .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
     },
-    async save(favorite: Favorite, ownerId: string) {
-      favorites.set(favorite.id, {
-        ...favorite,
-        ownerId,
-        sortKey: favorite.addedAt.getTime(),
-      });
+    async save(favorite: Favorite) {
+      favorites.set(favorite.id, favorite);
     },
     async delete(favorite: Favorite) {
       favorites.delete(favorite.id);
     },
-  } as FavoritesRepository;
+  };
 }

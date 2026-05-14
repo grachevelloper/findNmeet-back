@@ -2,12 +2,12 @@ import type { Favorite, VkFavoriteSnapshot } from '../../domain/models/favorite'
 import { FavoriteEntity } from './favorite.entity';
 import { providerToCode } from './provider-code.mapper';
 
-export function favoriteToEntity(favorite: Favorite, ownerId: string): FavoriteEntity {
+export function favoriteToEntity(favorite: Favorite): FavoriteEntity {
   const entity = new FavoriteEntity();
   const vkSnapshot = favorite.providerDetails.kind === 'vkSnapshot' ? favorite.providerDetails.snapshot : undefined;
 
   entity.id = favorite.id;
-  entity.userId = ownerId;
+  entity.userId = favorite.ownerId;
   entity.provider = providerToCode(favorite.provider);
   entity.externalId = favorite.externalId;
   entity.displayTitle = favorite.displayTitle;

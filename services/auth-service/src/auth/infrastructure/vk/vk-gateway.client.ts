@@ -4,17 +4,19 @@ import { join } from 'path';
 import { firstValueFrom, Observable } from 'rxjs';
 
 import type { ExchangeOAuthCodeRequest, ExchangeOAuthCodeResponse } from '@findnmeet/ts-types/vk/v1';
+import { VkOAuthProvider } from '../../application/ports/vk-oauth-provider';
 
 type VkGatewayGrpcService = {
   exchangeOAuthCode(request: ExchangeOAuthCodeRequest): Observable<ExchangeOAuthCodeResponse>;
 };
 
 @Injectable()
-export class VkGatewayClient implements OnModuleInit {
+export class VkGatewayClient extends VkOAuthProvider implements OnModuleInit {
   private service!: VkGatewayGrpcService;
   private readonly client: ClientGrpc;
 
   constructor() {
+    super();
     this.client = ClientProxyFactory.create({
       transport: Transport.GRPC,
       options: {

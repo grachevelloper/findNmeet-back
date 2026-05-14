@@ -1,7 +1,8 @@
 import { createHmac, createPrivateKey, randomBytes, sign as cryptoSign, timingSafeEqual } from 'crypto';
 import { Injectable } from '@nestjs/common';
 
-import type { AuthSession } from '../../domain/models/auth-session';
+import { SessionTokenManager } from '../../application/ports/session-token-manager';
+import type { IssuedSession } from '../../application/dto/issued-session.dto';
 
 type UserAccessTokenPayload = {
   sub: string;
@@ -12,7 +13,7 @@ type UserAccessTokenPayload = {
 };
 
 @Injectable()
-export class SessionTokens {
+export class SessionTokens extends SessionTokenManager {
   private readonly privateKey: string;
   private readonly accessTtlSeconds: number;
   private readonly refreshTtlSeconds: number;
@@ -22,6 +23,7 @@ export class SessionTokens {
     accessTtl = process.env.USER_JWT_EXPIRES_IN ?? '15m',
     refreshTtl = process.env.USER_REFRESH_EXPIRES_IN ?? '30d',
   ) {
+    super();
     if (!privateKey && process.env.NODE_ENV === 'production') {
       throw new Error('USER_JWT_PRIVATE_KEY or JWT_PRIVATE_KEY is required in production');
     }
@@ -31,7 +33,7 @@ export class SessionTokens {
     this.refreshTtlSeconds = parseDurationSeconds(refreshTtl);
   }
 
-  issue(userId: string, now = new Date(), roles?: string[]): AuthSession {
+  issue(userId: string, now = new Date(), roles?: string[]): IssuedSession {
     const issuedAt = Math.floor(now.getTime() / 1000);
     const expiresAt = new Date((issuedAt + this.accessTtlSeconds) * 1000);
     const accessToken = this.sign({
