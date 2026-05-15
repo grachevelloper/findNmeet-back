@@ -24,10 +24,11 @@ async function bootstrap() {
   app.enableCors(corsOptions());
 
   const port = Number(process.env.API_GATEWAY_PORT ?? 3000);
-  await app.listen(port);
+  const host = process.env.API_GATEWAY_HOST ?? '127.0.0.1';
+  await app.listen(port, host);
 
   const logger = new Logger('ApiGatewayBootstrap');
-  logger.log(`api-gateway listening on port ${port}`);
+  logger.log(`api-gateway listening on ${host}:${port}`);
 }
 
 void bootstrap();

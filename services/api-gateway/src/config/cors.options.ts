@@ -7,7 +7,14 @@ export function corsOptions(): CorsOptions {
     .filter(Boolean);
 
   if (configuredOrigins.length === 0) {
-    return { origin: true, credentials: true };
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('API_GATEWAY_CORS_ORIGINS or API_GATEWAY_FRONTEND_URL is required in production');
+    }
+
+    return {
+      origin: ['http://localhost:5173', 'https://localhost:5173', 'http://localhost:3000', 'https://localhost:3000'],
+      credentials: true,
+    };
   }
 
   return {

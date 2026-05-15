@@ -52,7 +52,11 @@ export class ProxyService implements OnModuleInit {
     }
 
     try {
-      return await firstValueFrom(method.call(service, requestMessage, metadata) as never);
+      if (metadata) {
+        return await firstValueFrom(method.call(service, requestMessage, metadata) as never);
+      }
+
+      return await firstValueFrom(method.call(service, requestMessage) as never);
     } catch (error) {
       throw grpcToHttpError(error);
     }

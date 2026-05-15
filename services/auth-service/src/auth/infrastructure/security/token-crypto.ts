@@ -12,8 +12,9 @@ export class TokenCrypto extends TokenCipher {
   private readonly key: Buffer;
   readonly keyId = 'default';
 
-  constructor(secret = process.env.TOKEN_ENCRYPTION_KEY) {
+  constructor() {
     super();
+    const secret = process.env.TOKEN_ENCRYPTION_KEY;
     if (!secret && process.env.NODE_ENV === 'production') {
       throw new Error('TOKEN_ENCRYPTION_KEY is required in production');
     }

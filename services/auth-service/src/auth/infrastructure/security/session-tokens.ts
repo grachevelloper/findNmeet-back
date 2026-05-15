@@ -18,12 +18,11 @@ export class SessionTokens extends SessionTokenManager {
   private readonly accessTtlSeconds: number;
   private readonly refreshTtlSeconds: number;
 
-  constructor(
-    privateKey = process.env.USER_JWT_PRIVATE_KEY ?? process.env.JWT_PRIVATE_KEY,
-    accessTtl = process.env.USER_JWT_EXPIRES_IN ?? '15m',
-    refreshTtl = process.env.USER_REFRESH_EXPIRES_IN ?? '30d',
-  ) {
+  constructor() {
     super();
+    const privateKey = process.env.USER_JWT_PRIVATE_KEY ?? process.env.JWT_PRIVATE_KEY;
+    const accessTtl = process.env.USER_JWT_EXPIRES_IN ?? '15m';
+    const refreshTtl = process.env.USER_REFRESH_EXPIRES_IN ?? '30d';
     if (!privateKey && process.env.NODE_ENV === 'production') {
       throw new Error('USER_JWT_PRIVATE_KEY or JWT_PRIVATE_KEY is required in production');
     }
