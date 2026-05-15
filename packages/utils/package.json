@@ -10,30 +10,6 @@
   "dependencies": {
     "@findnmeet/ts-types": "workspace:*"
   },
-  "peerDependencies": {
-    "@grpc/grpc-js": "^1.13.4",
-    "@nestjs/common": "^11.0.1",
-    "@nestjs/microservices": "^11.1.19",
-    "grpc-health-check": "^2.1.0",
-    "rxjs": "^7.8.1"
-  },
-  "peerDependenciesMeta": {
-    "@grpc/grpc-js": {
-      "optional": true
-    },
-    "@nestjs/common": {
-      "optional": true
-    },
-    "@nestjs/microservices": {
-      "optional": true
-    },
-    "grpc-health-check": {
-      "optional": true
-    },
-    "rxjs": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "typescript": "^5.7.3"
   }

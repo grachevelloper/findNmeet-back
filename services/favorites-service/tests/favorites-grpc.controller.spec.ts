@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import { create } from '@bufbuild/protobuf';
 import { Metadata, status } from '@grpc/grpc-js';
 import { FieldMaskSchema } from '@bufbuild/protobuf/wkt';
-import { HttpExceptionRpcFilter } from '@findnmeet/utils';
 import {
   DeleteFavoriteRequestSchema,
   FavoritePatchSchema,
@@ -14,6 +13,7 @@ import {
 import { PageRequestSchema, Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
 import { FavoritesGrpcController } from '../src/interfaces/grpc/controllers/favorites-grpc.controller';
+import { HttpExceptionRpcFilter } from '../src/interfaces/grpc/filters/http-exception-rpc.filter';
 import { CreateFavoriteUseCase } from '../src/favorites/application/use-cases/create-favorite.use-case';
 import { DeleteFavoriteUseCase } from '../src/favorites/application/use-cases/delete-favorite.use-case';
 import { GetFavoriteUseCase } from '../src/favorites/application/use-cases/get-favorite.use-case';

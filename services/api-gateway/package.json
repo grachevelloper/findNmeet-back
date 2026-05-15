@@ -58,8 +58,7 @@
     "moduleNameMapper": {
       "^@findnmeet/ts-types$": "<rootDir>/../../../packages/ts-types/dist/src",
       "^@findnmeet/ts-types/(.*)$": "<rootDir>/../../../packages/ts-types/dist/src/$1",
-      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src",
-      "^@findnmeet/utils/(.*)$": "<rootDir>/../../../packages/utils/src/$1"
+      "^@findnmeet/utils$": "<rootDir>/../../../packages/utils/src"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

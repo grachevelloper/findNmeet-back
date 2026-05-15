@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { HttpExceptionRpcFilter } from '@findnmeet/utils';
 
 import { AppModule } from '../app.module';
+import { HttpExceptionRpcFilter } from '../interfaces/grpc/filters/http-exception-rpc.filter';
 import { favoritesGrpcOptions } from './favorites-grpc.options';
 
 export async function bootstrapGrpcServer() {

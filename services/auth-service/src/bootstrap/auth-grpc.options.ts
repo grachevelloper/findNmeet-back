@@ -2,7 +2,8 @@ import { join } from 'path';
 import { protoPath as healthCheckProtoPath } from 'grpc-health-check';
 import { Transport } from '@nestjs/microservices';
 import type { GrpcOptions } from '@nestjs/microservices';
-import { registerGrpcHealthCheck } from '@findnmeet/utils';
+
+import { registerGrpcHealthCheck } from './register-grpc-health-check';
 
 export function authGrpcOptions(): GrpcOptions {
   return {

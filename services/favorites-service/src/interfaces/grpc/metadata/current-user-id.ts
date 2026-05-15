@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js';
-import { missingUserContext } from '@findnmeet/utils';
+
+import { missingUserContext } from '../../../favorites/domain/errors/validation-errors';
 
 export function currentUserId(metadata: Metadata): string {
   const userId = metadata.get('x-user-id')[0];

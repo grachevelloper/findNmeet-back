@@ -1,6 +1,5 @@
-import { missingRequiredField, invalidExternalId } from '@findnmeet/utils';
-
 import { unsupportedProvider } from './errors/unsupported-provider';
+import { invalidExternalId, missingRequiredField } from './errors/validation-errors';
 import { FavoriteProvider } from './models/favorite-provider';
 
 export function requireUuid(value: string | undefined, fieldName: string): string {
