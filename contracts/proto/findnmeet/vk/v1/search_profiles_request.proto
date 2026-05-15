@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
+
+import "findnmeet/shared/v1/page.proto";
+import "findnmeet/shared/v1/sensitive_string.proto";
+import "findnmeet/vk/v1/search_filters.proto";
+
+message SearchProfilesRequest {
+  VkSearchFilters filters = 1;
+  .findnmeet.shared.v1.PageRequest page = 2;
+  .findnmeet.shared.v1.SensitiveString access_token = 3;
+}

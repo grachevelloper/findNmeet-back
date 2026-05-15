@@ -2,6 +2,7 @@ import type { FavoriteProvider } from './favorite-provider';
 
 export interface Favorite {
   id: string;
+  ownerId: string;
   provider: FavoriteProvider;
   externalId: string;
   displayTitle: string;

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package findnmeet.auth.v1;
+
+import "findnmeet/auth/v1/user_external_link.proto";
+
+message GetExternalLinksResponse {
+  repeated UserExternalLink external_links = 1;
+}

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package findnmeet.vk.v1;
 
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
+
 import "findnmeet/vk/v1/profile.proto";
 
 message VkSearchResult {

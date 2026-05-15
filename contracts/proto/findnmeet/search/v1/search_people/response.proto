@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.search.v1.search_people;
-
-import "findnmeet/search/v1/search_result.proto";
-
-message SearchPeopleResponse {
-  SearchResult result = 1;
-}

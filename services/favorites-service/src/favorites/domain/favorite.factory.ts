@@ -4,6 +4,7 @@ import { createVkFavoriteSnapshot } from './vk-favorite-snapshot.factory';
 
 export function createFavorite(input: {
   id: string;
+  ownerId: string;
   provider: FavoriteProvider;
   externalId: string;
   note: string;
@@ -16,6 +17,7 @@ export function createFavorite(input: {
 
   return {
     id: input.id,
+    ownerId: input.ownerId,
     provider: input.provider,
     externalId: input.externalId,
     displayTitle,

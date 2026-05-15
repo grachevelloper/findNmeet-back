@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.get_user;
-
-import "findnmeet/auth/v1/authenticated_user.proto";
-
-message GetUserResponse {
-  AuthenticatedUser user = 1;
-}

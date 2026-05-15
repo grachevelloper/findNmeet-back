@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package findnmeet.vk.v1;
+
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
+
+import "findnmeet/shared/v1/page.proto";
+import "findnmeet/vk/v1/search_result.proto";
+
+message SearchProfilesResponse {
+  VkSearchResult result = 1;
+  .findnmeet.shared.v1.PageResponse page = 2;
+}

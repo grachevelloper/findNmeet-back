@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package findnmeet.shared.v1;
 
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shared/v1;sharedv1";
+
 enum Provider {
   PROVIDER_UNSPECIFIED = 0;
   PROVIDER_VK = 1;

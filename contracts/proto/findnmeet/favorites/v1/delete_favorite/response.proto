@@ -1,5 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.favorites.v1.delete_favorite;
-
-message DeleteFavoriteResponse {}

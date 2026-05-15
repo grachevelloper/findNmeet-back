@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.complete_vk_oauth;
-
-message CompleteVkOAuthRequest {
-  string code = 1;
-  string state = 2;
-  string redirect_uri = 3;
-}

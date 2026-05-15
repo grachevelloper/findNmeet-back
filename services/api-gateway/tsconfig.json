@@ -3,8 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
+    "types": ["node", "jest"],
     "paths": {
-      "@findnmeet/types": ["../../packages/types/dist"],
+      "@findnmeet/ts-types": ["../../packages/ts-types/dist"],
+      "@findnmeet/ts-types/*": ["../../packages/ts-types/dist/*"],
       "@findnmeet/utils": ["../../packages/utils/dist"]
     }
   },

@@ -1,13 +1,13 @@
-import type { FavoriteRecord } from '../../application/ports/favorite-record.type';
-import type { VkFavoriteSnapshot } from '../../domain/models/favorite';
+import type { Favorite, VkFavoriteSnapshot } from '../../domain/models/favorite';
 import { FavoriteEntity } from './favorite.entity';
 import { providerFromCode } from './provider-code.mapper';
 
-export function entityToFavoriteRecord(entity: FavoriteEntity): FavoriteRecord {
+export function entityToFavorite(entity: FavoriteEntity): Favorite {
   const vkSnapshot = entity.vkSnapshot ? restoreVkSnapshot(entity.vkSnapshot) : undefined;
 
   return {
     id: entity.id,
+    ownerId: entity.userId,
     provider: providerFromCode(entity.provider),
     externalId: entity.externalId,
     displayTitle: entity.displayTitle,
@@ -28,8 +28,6 @@ export function entityToFavoriteRecord(entity: FavoriteEntity): FavoriteRecord {
         snapshotUpdatedAt: entity.updatedAt,
       },
     },
-    ownerId: entity.userId,
-    sortKey: entity.addedAt.getTime(),
   };
 }
 

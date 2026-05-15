@@ -1,5 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.auth.v1.revoke_session;
-
-message RevokeSessionResponse {}

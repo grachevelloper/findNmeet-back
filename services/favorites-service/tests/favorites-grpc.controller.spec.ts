@@ -12,9 +12,14 @@ import {
 } from '@findnmeet/ts-types/favorites/v1';
 import { PageRequestSchema, Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
-import { FavoritesGrpcController } from '../src/grpc/controllers/favorites-grpc.controller';
-import { HttpExceptionRpcFilter } from '../src/grpc/filters/http-exception-rpc.filter';
-import { FavoritesApplicationService } from '../src/favorites/application/favorites.service';
+import { FavoritesGrpcController } from '../src/interfaces/grpc/controllers/favorites-grpc.controller';
+import { HttpExceptionRpcFilter } from '../src/interfaces/grpc/filters/http-exception-rpc.filter';
+import { CreateFavoriteUseCase } from '../src/favorites/application/use-cases/create-favorite.use-case';
+import { DeleteFavoriteUseCase } from '../src/favorites/application/use-cases/delete-favorite.use-case';
+import { GetFavoriteUseCase } from '../src/favorites/application/use-cases/get-favorite.use-case';
+import { ListFavoritesUseCase } from '../src/favorites/application/use-cases/list-favorites.use-case';
+import { RefreshFavoriteUseCase } from '../src/favorites/application/use-cases/refresh-favorite.use-case';
+import { UpdateFavoriteUseCase } from '../src/favorites/application/use-cases/update-favorite.use-case';
 import {
   createFavoriteRequest,
   createRepositoryFake,
@@ -26,7 +31,15 @@ describe('FavoritesGrpcController', () => {
   let controller: FavoritesGrpcController;
 
   beforeEach(() => {
-    controller = new FavoritesGrpcController(new FavoritesApplicationService(createRepositoryFake()));
+    const repository = createRepositoryFake();
+    controller = new FavoritesGrpcController(
+      new CreateFavoriteUseCase(repository),
+      new GetFavoriteUseCase(repository),
+      new ListFavoritesUseCase(repository),
+      new UpdateFavoriteUseCase(repository),
+      new DeleteFavoriteUseCase(repository),
+      new RefreshFavoriteUseCase(repository),
+    );
   });
 
   it('creates VK favorite from gateway user metadata', async () => {
@@ -80,7 +93,7 @@ describe('FavoritesGrpcController', () => {
 
     await expect(
       controller.deleteFavorite(favoriteIdRequest(DeleteFavoriteRequestSchema, favoriteId), metadataWithUserId()),
-    ).resolves.toHaveProperty('$typeName', 'findnmeet.favorites.v1.delete_favorite.DeleteFavoriteResponse');
+    ).resolves.toHaveProperty('$typeName', 'findnmeet.favorites.v1.DeleteFavoriteResponse');
 
     await expect(
       controller.getFavorite(favoriteIdRequest(GetFavoriteRequestSchema, favoriteId), metadataWithUserId()),

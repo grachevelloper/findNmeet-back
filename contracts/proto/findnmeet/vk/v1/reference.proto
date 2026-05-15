@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package findnmeet.vk.v1;
 
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v1;vkv1";
+
 message VkReference {
   int64 id = 1;
   string title = 2;

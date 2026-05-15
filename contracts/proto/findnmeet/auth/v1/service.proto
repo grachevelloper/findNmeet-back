@@ -2,26 +2,26 @@ syntax = "proto3";
 
 package findnmeet.auth.v1;
 
-import "findnmeet/auth/v1/complete_vk_oauth/request.proto";
-import "findnmeet/auth/v1/complete_vk_oauth/response.proto";
-import "findnmeet/auth/v1/get_external_links/request.proto";
-import "findnmeet/auth/v1/get_external_links/response.proto";
-import "findnmeet/auth/v1/get_user/request.proto";
-import "findnmeet/auth/v1/get_user/response.proto";
-import "findnmeet/auth/v1/refresh_session/request.proto";
-import "findnmeet/auth/v1/refresh_session/response.proto";
-import "findnmeet/auth/v1/revoke_session/request.proto";
-import "findnmeet/auth/v1/revoke_session/response.proto";
+import "findnmeet/auth/v1/complete_vk_oauth_request.proto";
+import "findnmeet/auth/v1/complete_vk_oauth_response.proto";
+import "findnmeet/auth/v1/get_external_links_request.proto";
+import "findnmeet/auth/v1/get_external_links_response.proto";
+import "findnmeet/auth/v1/get_user_request.proto";
+import "findnmeet/auth/v1/get_user_response.proto";
+import "findnmeet/auth/v1/refresh_session_request.proto";
+import "findnmeet/auth/v1/refresh_session_response.proto";
+import "findnmeet/auth/v1/revoke_session_request.proto";
+import "findnmeet/auth/v1/revoke_session_response.proto";
 
 service AuthService {
-  rpc CompleteVkOAuth(.findnmeet.auth.v1.complete_vk_oauth.CompleteVkOAuthRequest)
-      returns (.findnmeet.auth.v1.complete_vk_oauth.CompleteVkOAuthResponse);
-  rpc GetUser(.findnmeet.auth.v1.get_user.GetUserRequest)
-      returns (.findnmeet.auth.v1.get_user.GetUserResponse);
-  rpc GetExternalLinks(.findnmeet.auth.v1.get_external_links.GetExternalLinksRequest)
-      returns (.findnmeet.auth.v1.get_external_links.GetExternalLinksResponse);
-  rpc RefreshSession(.findnmeet.auth.v1.refresh_session.RefreshSessionRequest)
-      returns (.findnmeet.auth.v1.refresh_session.RefreshSessionResponse);
-  rpc RevokeSession(.findnmeet.auth.v1.revoke_session.RevokeSessionRequest)
-      returns (.findnmeet.auth.v1.revoke_session.RevokeSessionResponse);
+  rpc CompleteVkOAuth(CompleteVkOAuthRequest)
+      returns (CompleteVkOAuthResponse);
+  rpc GetUser(GetUserRequest)
+      returns (GetUserResponse);
+  rpc GetExternalLinks(GetExternalLinksRequest)
+      returns (GetExternalLinksResponse);
+  rpc RefreshSession(RefreshSessionRequest)
+      returns (RefreshSessionResponse);
+  rpc RevokeSession(RevokeSessionRequest)
+      returns (RevokeSessionResponse);
 }

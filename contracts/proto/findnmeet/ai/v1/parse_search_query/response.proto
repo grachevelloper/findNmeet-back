@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.ai.v1.parse_search_query;
-
-import "findnmeet/search/v1/search_criteria.proto";
-
-message ParseSearchQueryResponse {
-  .findnmeet.search.v1.SearchCriteria criteria = 1;
-}

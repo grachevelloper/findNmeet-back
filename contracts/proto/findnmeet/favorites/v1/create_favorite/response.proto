@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package findnmeet.favorites.v1.create_favorite;
-
-import "findnmeet/favorites/v1/favorite.proto";
-
-message CreateFavoriteResponse {
-  Favorite favorite = 1;
-}

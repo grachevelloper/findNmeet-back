@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package findnmeet.shared.v1;
 
+option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shared/v1;sharedv1";
+
 message Uuid {
   // RFC 4122 UUID encoded as canonical text.
   string value = 1;
