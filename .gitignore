@@ -16,3 +16,8 @@ services/vk-gateway/bin/
 # AI
 .agents
 skills-lock.json
+
+.pnpm-store
+
+docker/dev
+scripts/dev
