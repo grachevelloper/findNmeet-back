@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import type { DataSourceOptions } from 'typeorm';
-import { getPostgresUrl } from '@findnmeet/utils';
+import { getPostgresSynchronize, getPostgresUrl } from '@findnmeet/utils';
 
 import { FavoriteEntity } from './favorites/infrastructure/persistence/favorite.entity';
 
@@ -10,7 +10,7 @@ export const favoritesDataSourceOptions: DataSourceOptions = {
   url: getPostgresUrl(),
   entities: [FavoriteEntity],
   migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-  synchronize: false,
+  synchronize: getPostgresSynchronize(),
 };
 
 export default new DataSource(favoritesDataSourceOptions);

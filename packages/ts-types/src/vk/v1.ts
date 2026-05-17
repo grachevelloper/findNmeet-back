@@ -1,5 +1,7 @@
 export * from '../../.gen/findnmeet/vk/v1/exchange_oauth_code_request_pb';
 export * from '../../.gen/findnmeet/vk/v1/exchange_oauth_code_response_pb';
+export * from '../../.gen/findnmeet/vk/v1/get_current_profile_request_pb';
+export * from '../../.gen/findnmeet/vk/v1/get_current_profile_response_pb';
 export * from '../../.gen/findnmeet/vk/v1/get_profile_request_pb';
 export * from '../../.gen/findnmeet/vk/v1/get_profile_response_pb';
 export * from '../../.gen/findnmeet/vk/v1/oauth_tokens_pb';
@@ -9,6 +11,8 @@ export * from '../../.gen/findnmeet/vk/v1/profile_lookup_pb';
 export * from '../../.gen/findnmeet/vk/v1/profile_pb';
 export * from '../../.gen/findnmeet/vk/v1/profile_visibility_pb';
 export * from '../../.gen/findnmeet/vk/v1/reference_pb';
+export * from '../../.gen/findnmeet/vk/v1/refresh_oauth_tokens_request_pb';
+export * from '../../.gen/findnmeet/vk/v1/refresh_oauth_tokens_response_pb';
 export * from '../../.gen/findnmeet/vk/v1/relation_status_pb';
 export * from '../../.gen/findnmeet/vk/v1/search_filters_pb';
 export * from '../../.gen/findnmeet/vk/v1/search_profiles_request_pb';

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package findnmeet.auth.v1;
+
+import "findnmeet/shared/v1/sensitive_string.proto";
+
+message CompleteVkWebAuthRequest {
+  .findnmeet.shared.v1.SensitiveString access_token = 1;
+  .findnmeet.shared.v1.SensitiveString refresh_token = 2;
+  int64 expires_in_seconds = 3;
+  string device_id = 4;
+}

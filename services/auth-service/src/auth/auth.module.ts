@@ -6,6 +6,7 @@ import { SessionTokenManager } from './application/ports/session-token-manager';
 import { TokenCipher } from './application/ports/token-cipher';
 import { VkOAuthProvider } from './application/ports/vk-oauth-provider';
 import { CompleteVkOAuthUseCase } from './application/use-cases/complete-vk-oauth.use-case';
+import { CompleteVkWebAuthUseCase } from './application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from './application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from './application/use-cases/get-user.use-case';
 import { RefreshSessionUseCase } from './application/use-cases/refresh-session.use-case';
@@ -32,6 +33,7 @@ import { VkGatewayClient } from './infrastructure/vk/vk-gateway.client';
   imports: [TypeOrmModule.forFeature([UserEntity, UserExternalLinkEntity, AuthTokenEntity, AuthSessionEntity])],
   providers: [
     CompleteVkOAuthUseCase,
+    CompleteVkWebAuthUseCase,
     GetUserUseCase,
     GetExternalLinksUseCase,
     RefreshSessionUseCase,
@@ -56,6 +58,7 @@ import { VkGatewayClient } from './infrastructure/vk/vk-gateway.client';
   ],
   exports: [
     CompleteVkOAuthUseCase,
+    CompleteVkWebAuthUseCase,
     GetUserUseCase,
     GetExternalLinksUseCase,
     RefreshSessionUseCase,

@@ -9,7 +9,9 @@ import (
 
 type Server interface {
 	ExchangeOAuthCode(context.Context, *vkv1.ExchangeOAuthCodeRequest) (*vkv1.ExchangeOAuthCodeResponse, error)
+	GetCurrentProfile(context.Context, *vkv1.GetCurrentProfileRequest) (*vkv1.GetCurrentProfileResponse, error)
 	GetProfile(context.Context, *vkv1.GetProfileRequest) (*vkv1.GetProfileResponse, error)
+	RefreshOAuthTokens(context.Context, *vkv1.RefreshOAuthTokensRequest) (*vkv1.RefreshOAuthTokensResponse, error)
 	SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error)
 }
 
@@ -19,7 +21,9 @@ func RegisterVkGatewayServiceServer(registrar grpc.ServiceRegistrar, server Serv
 		HandlerType: (*Server)(nil),
 		Methods: []grpc.MethodDesc{
 			{MethodName: "ExchangeOAuthCode", Handler: exchangeOAuthCodeHandler},
+			{MethodName: "GetCurrentProfile", Handler: getCurrentProfileHandler},
 			{MethodName: "GetProfile", Handler: getProfileHandler},
+			{MethodName: "RefreshOAuthTokens", Handler: refreshOAuthTokensHandler},
 			{MethodName: "SearchProfiles", Handler: searchProfilesHandler},
 		},
 		Streams:  []grpc.StreamDesc{},
@@ -56,6 +60,40 @@ func getProfileHandler(server any, ctx context.Context, decode func(any) error, 
 	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/GetProfile"}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return server.(Server).GetProfile(ctx, req.(*vkv1.GetProfileRequest))
+	}
+
+	return interceptor(ctx, request, info, handler)
+}
+
+func getCurrentProfileHandler(server any, ctx context.Context, decode func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+	request := new(vkv1.GetCurrentProfileRequest)
+	if err := decode(request); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return server.(Server).GetCurrentProfile(ctx, request)
+	}
+
+	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/GetCurrentProfile"}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return server.(Server).GetCurrentProfile(ctx, req.(*vkv1.GetCurrentProfileRequest))
+	}
+
+	return interceptor(ctx, request, info, handler)
+}
+
+func refreshOAuthTokensHandler(server any, ctx context.Context, decode func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+	request := new(vkv1.RefreshOAuthTokensRequest)
+	if err := decode(request); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return server.(Server).RefreshOAuthTokens(ctx, request)
+	}
+
+	info := &grpc.UnaryServerInfo{Server: server, FullMethod: "/findnmeet.vk.v1.VkGatewayService/RefreshOAuthTokens"}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return server.(Server).RefreshOAuthTokens(ctx, req.(*vkv1.RefreshOAuthTokensRequest))
 	}
 
 	return interceptor(ctx, request, info, handler)

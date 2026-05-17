@@ -11,3 +11,9 @@ export function getPostgresUrl(env: Record<string, string | undefined> = process
 
   return DEFAULT_POSTGRES_URL;
 }
+
+export function getPostgresSynchronize(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return env.DB_SYNCHRONIZE === 'true';
+}

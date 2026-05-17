@@ -4,6 +4,7 @@ package findnmeet.auth.v1;
 
 import "findnmeet/auth/v1/complete_vk_oauth_request.proto";
 import "findnmeet/auth/v1/complete_vk_oauth_response.proto";
+import "findnmeet/auth/v1/complete_vk_web_auth_request.proto";
 import "findnmeet/auth/v1/get_external_links_request.proto";
 import "findnmeet/auth/v1/get_external_links_response.proto";
 import "findnmeet/auth/v1/get_user_request.proto";
@@ -15,6 +16,8 @@ import "findnmeet/auth/v1/revoke_session_response.proto";
 
 service AuthService {
   rpc CompleteVkOAuth(CompleteVkOAuthRequest)
+      returns (CompleteVkOAuthResponse);
+  rpc CompleteVkWebAuth(CompleteVkWebAuthRequest)
       returns (CompleteVkOAuthResponse);
   rpc GetUser(GetUserRequest)
       returns (GetUserResponse);

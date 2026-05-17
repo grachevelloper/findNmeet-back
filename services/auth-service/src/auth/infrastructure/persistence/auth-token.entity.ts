@@ -14,6 +14,9 @@ export class AuthTokenEntity {
   @Column('text', { name: 'refresh_token_ciphertext', default: '' })
   refreshTokenCiphertext!: string;
 
+  @Column('varchar', { name: 'device_id', length: 128, nullable: true })
+  deviceId!: string | null;
+
   @Column('varchar', { name: 'encryption_key_id', length: 64 })
   encryptionKeyId!: string;
 

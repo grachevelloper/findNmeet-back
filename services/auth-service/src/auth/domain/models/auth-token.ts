@@ -3,6 +3,7 @@ export type AuthToken = {
   externalLinkId: string;
   accessToken: string;
   refreshToken: string;
+  deviceId: string | null;
   encryptionKeyId: string;
   expiresAt: Date;
   createdAt: Date;

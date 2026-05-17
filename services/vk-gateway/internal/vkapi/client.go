@@ -105,11 +105,8 @@ func (c *Client) GetProfile(ctx context.Context, lookup string, accessToken stri
 		return nil, ErrUnauthorized
 	}
 
-	endpoint, err := buildURL(c.apiURL, "/method/users.get", func(query url.Values) {
+	endpoint, err := buildUsersGetURL(c.apiURL, c.apiVersion, accessToken, func(query url.Values) {
 		query.Set("user_ids", lookup)
-		query.Set("fields", "screen_name,photo_200,city,country,home_town,education,graduation,bdate,online,last_seen,relation,can_write_private_message,is_closed")
-		query.Set("access_token", accessToken)
-		query.Set("v", c.apiVersion)
 	})
 	if err != nil {
 		return nil, err
@@ -132,6 +129,39 @@ func (c *Client) GetProfile(ctx context.Context, lookup string, accessToken stri
 	}
 
 	return profileFromVK(payload.Response[0]), nil
+}
+
+func (c *Client) GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error) {
+	if accessToken == "" {
+		return nil, ErrUnauthorized
+	}
+
+	endpoint, err := buildUsersGetURL(c.apiURL, c.apiVersion, accessToken, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := newGetRequest(ctx, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload usersGetResponse
+	if err := c.doJSON(req, &payload); err != nil {
+		return nil, err
+	}
+	if payload.Error != nil {
+		return nil, vkAPIError(payload.Error)
+	}
+	if len(payload.Response) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return profileFromVK(payload.Response[0]), nil
+}
+
+func (c *Client) RefreshOAuthTokens(context.Context, string, string) (*vkv1.VkOAuthTokens, error) {
+	return nil, fmt.Errorf("vk oauth token refresh is not implemented yet")
 }
 
 func (c *Client) doJSON(req *http.Request, target any) error {
@@ -203,6 +233,17 @@ type vkUser struct {
 	IsClosed               bool         `json:"is_closed"`
 	CanWritePrivateMessage *int32       `json:"can_write_private_message"`
 	vkEducation
+}
+
+func buildUsersGetURL(apiURL string, apiVersion string, accessToken string, mutate func(url.Values)) (string, error) {
+	return buildURL(apiURL, "/method/users.get", func(query url.Values) {
+		if mutate != nil {
+			mutate(query)
+		}
+		query.Set("fields", "screen_name,photo_200,city,country,home_town,education,graduation,bdate,online,last_seen,relation,can_write_private_message,is_closed")
+		query.Set("access_token", accessToken)
+		query.Set("v", apiVersion)
+	})
 }
 
 func profileFromVK(user vkUser) *vkv1.VkProfile {
