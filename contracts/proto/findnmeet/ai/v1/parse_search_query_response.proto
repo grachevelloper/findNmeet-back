@@ -5,5 +5,5 @@ package findnmeet.ai.v1;
 import "findnmeet/search/v1/search_criteria.proto";
 
 message ParseSearchQueryResponse {
-  .findnmeet.search.v1.SearchCriteria criteria = 1;
+  .findnmeet.search.v1.SearchCriteria  criteria = 1;
 }

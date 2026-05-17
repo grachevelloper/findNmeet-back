@@ -8,16 +8,16 @@ import "findnmeet/shared/v1/uuid.proto";
 import "google/protobuf/timestamp.proto";
 
 message Favorite {
-  .findnmeet.shared.v1.Uuid id = 1;
-  .findnmeet.shared.v1.Provider provider = 2;
-  string external_id = 3;
-  string display_title = 4;
-  string display_image_url = 5;
-  string note = 6;
-  google.protobuf.Timestamp added_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  .findnmeet.shared.v1.Uuid      id = 1;
+  .findnmeet.shared.v1.Provider  provider = 2;
+  string                         external_id = 3;
+  string                         display_title = 4;
+  string                         display_image_url = 5;
+  string                         note = 6;
+  google.protobuf.Timestamp      added_at = 7;
+  google.protobuf.Timestamp      updated_at = 8;
 
   oneof provider_details {
-    VkFavoriteSnapshot vk_snapshot = 9;
+    VkFavoriteSnapshot  vk_snapshot = 9;
   }
 }

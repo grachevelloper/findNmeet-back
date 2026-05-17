@@ -8,7 +8,7 @@ import "findnmeet/vk/v1/oauth_tokens.proto";
 import "findnmeet/vk/v1/profile.proto";
 
 message ExchangeOAuthCodeResponse {
-  string external_id = 1;
-  VkOAuthTokens tokens = 2;
-  VkProfile profile = 3;
+  string         external_id = 1;
+  VkOAuthTokens  tokens = 2;
+  VkProfile      profile = 3;
 }

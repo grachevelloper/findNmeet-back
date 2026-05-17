@@ -8,14 +8,14 @@ import "findnmeet/shared/v1/uuid.proto";
 import "google/protobuf/timestamp.proto";
 
 message UserExternalLink {
-  .findnmeet.shared.v1.Uuid id = 1;
-  .findnmeet.shared.v1.Uuid user_id = 2;
-  .findnmeet.shared.v1.Provider provider = 3;
-  string external_id = 4;
-  google.protobuf.Timestamp linked_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  .findnmeet.shared.v1.Uuid      id = 1;
+  .findnmeet.shared.v1.Uuid      user_id = 2;
+  .findnmeet.shared.v1.Provider  provider = 3;
+  string                         external_id = 4;
+  google.protobuf.Timestamp      linked_at = 5;
+  google.protobuf.Timestamp      updated_at = 6;
 
   oneof provider_metadata {
-    VkExternalLinkMetadata vk = 7;
+    VkExternalLinkMetadata  vk = 7;
   }
 }

@@ -5,5 +5,5 @@ package findnmeet.favorites.v1;
 import "findnmeet/favorites/v1/favorite.proto";
 
 message RefreshFavoriteResponse {
-  Favorite favorite = 1;
+  Favorite  favorite = 1;
 }

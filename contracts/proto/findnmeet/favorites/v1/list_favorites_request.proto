@@ -6,6 +6,6 @@ import "findnmeet/shared/v1/page.proto";
 import "findnmeet/shared/v1/provider.proto";
 
 message ListFavoritesRequest {
-  .findnmeet.shared.v1.Provider provider = 1;
-  .findnmeet.shared.v1.PageRequest page = 2;
+  .findnmeet.shared.v1.Provider     provider = 1;
+  .findnmeet.shared.v1.PageRequest  page = 2;
 }

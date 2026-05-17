@@ -5,5 +5,5 @@ package findnmeet.search.v1;
 import "findnmeet/search/v1/search_result.proto";
 
 message SearchPeopleResponse {
-  SearchResult result = 1;
+  SearchResult  result = 1;
 }

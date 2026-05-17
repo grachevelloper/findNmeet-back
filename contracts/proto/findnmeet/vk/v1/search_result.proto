@@ -7,6 +7,6 @@ option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v
 import "findnmeet/vk/v1/profile.proto";
 
 message VkSearchResult {
-  optional int64 total_count = 1;
-  repeated VkProfile profiles = 2;
+  optional int64      total_count = 1;
+  repeated VkProfile  profiles = 2;
 }

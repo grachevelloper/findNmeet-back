@@ -6,6 +6,6 @@ import "findnmeet/auth/v1/user.proto";
 import "findnmeet/auth/v1/user_external_link.proto";
 
 message AuthenticatedUser {
-  User user = 1;
-  repeated UserExternalLink external_links = 2;
+  User                       user = 1;
+  repeated UserExternalLink  external_links = 2;
 }

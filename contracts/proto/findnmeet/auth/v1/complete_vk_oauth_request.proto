@@ -3,8 +3,8 @@ syntax = "proto3";
 package findnmeet.auth.v1;
 
 message CompleteVkOAuthRequest {
-  string code = 1;
-  string state = 2;
-  string redirect_uri = 3;
-  string code_verifier = 4;
+  string  code = 1;
+  string  state = 2;
+  string  redirect_uri = 3;
+  string  code_verifier = 4;
 }

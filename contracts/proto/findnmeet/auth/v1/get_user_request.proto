@@ -5,5 +5,5 @@ package findnmeet.auth.v1;
 import "findnmeet/shared/v1/uuid.proto";
 
 message GetUserRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
+  .findnmeet.shared.v1.Uuid  user_id = 1;
 }

@@ -6,7 +6,7 @@ option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/vk/v
 
 message VkProfileLookup {
   oneof value {
-    int64 vk_user_id = 1;
-    string screen_name = 2;
+    int64   vk_user_id = 1;
+    string  screen_name = 2;
   }
 }

@@ -5,10 +5,10 @@ package findnmeet.shared.v1;
 option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shared/v1;sharedv1";
 
 message PageRequest {
-  int32 page_size = 1;
-  string page_token = 2;
+  int32   page_size = 1;
+  string  page_token = 2;
 }
 
 message PageResponse {
-  string next_page_token = 1;
+  string  next_page_token = 1;
 }

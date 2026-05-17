@@ -6,5 +6,5 @@ option go_package = "github.com/findnmeet/vk-gateway/internal/gen/findnmeet/shar
 
 message SensitiveString {
   // Internal transport secret. Do not log, persist in plaintext, or expose.
-  string value = 1;
+  string  value = 1;
 }

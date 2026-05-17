@@ -6,7 +6,7 @@ import "findnmeet/shared/v1/sensitive_string.proto";
 import "google/protobuf/timestamp.proto";
 
 message Session {
-  .findnmeet.shared.v1.SensitiveString access_token = 1;
-  .findnmeet.shared.v1.SensitiveString refresh_token = 2;
-  google.protobuf.Timestamp expires_at = 3;
+  .findnmeet.shared.v1.SensitiveString  access_token = 1;
+  .findnmeet.shared.v1.SensitiveString  refresh_token = 2;
+  google.protobuf.Timestamp             expires_at = 3;
 }

@@ -5,6 +5,6 @@ package findnmeet.ai.v1;
 import "findnmeet/shared/v1/uuid.proto";
 
 message ParseSearchQueryRequest {
-  .findnmeet.shared.v1.Uuid user_id = 1;
-  string query = 2;
+  .findnmeet.shared.v1.Uuid  user_id = 1;
+  string                     query = 2;
 }

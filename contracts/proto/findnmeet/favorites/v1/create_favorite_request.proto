@@ -5,7 +5,7 @@ package findnmeet.favorites.v1;
 import "findnmeet/shared/v1/provider.proto";
 
 message CreateFavoriteRequest {
-  .findnmeet.shared.v1.Provider provider = 1;
-  string external_id = 2;
-  string note = 3;
+  .findnmeet.shared.v1.Provider  provider = 1;
+  string                         external_id = 2;
+  string                         note = 3;
 }

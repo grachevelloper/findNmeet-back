@@ -5,5 +5,5 @@ package findnmeet.auth.v1;
 import "findnmeet/auth/v1/session.proto";
 
 message RefreshSessionResponse {
-  Session session = 1;
+  Session  session = 1;
 }
