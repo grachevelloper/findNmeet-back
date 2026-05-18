@@ -1,6 +1,7 @@
 import { create } from '@bufbuild/protobuf';
 import {
   CompleteVkOAuthRequestSchema,
+  CompleteVkWebAuthRequestSchema,
   GetUserRequestSchema,
   RefreshSessionRequestSchema,
   RevokeSessionRequestSchema,
@@ -10,6 +11,7 @@ import { SensitiveStringSchema, UuidSchema } from '@findnmeet/ts-types/shared/v1
 
 import { AuthGrpcController } from '../src/interfaces/grpc/controllers/auth-grpc.controller';
 import { CompleteVkOAuthUseCase } from '../src/auth/application/use-cases/complete-vk-oauth.use-case';
+import { CompleteVkWebAuthUseCase } from '../src/auth/application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from '../src/auth/application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from '../src/auth/application/use-cases/get-user.use-case';
 import { RefreshSessionUseCase } from '../src/auth/application/use-cases/refresh-session.use-case';
@@ -20,12 +22,14 @@ import { Provider } from '../src/auth/domain/models/provider';
 describe('AuthGrpcController', () => {
   const now = new Date('2026-05-13T10:00:00.000Z');
   const completeVkOAuthUseCase = { execute: jest.fn() };
+  const completeVkWebAuthUseCase = { execute: jest.fn() };
   const getUserUseCase = { execute: jest.fn() };
   const getExternalLinksUseCase = { execute: jest.fn() };
   const refreshSessionUseCase = { execute: jest.fn() };
   const revokeSessionUseCase = { execute: jest.fn() };
   const controller = new AuthGrpcController(
     completeVkOAuthUseCase as unknown as CompleteVkOAuthUseCase,
+    completeVkWebAuthUseCase as unknown as CompleteVkWebAuthUseCase,
     getUserUseCase as unknown as GetUserUseCase,
     getExternalLinksUseCase as unknown as GetExternalLinksUseCase,
     refreshSessionUseCase as unknown as RefreshSessionUseCase,
@@ -82,6 +86,53 @@ describe('AuthGrpcController', () => {
     expect(response.result).toBe(AuthResult.CREATED_USER);
     expect(response.user?.user?.id?.value).toBe('550e8400-e29b-41d4-a716-446655440000');
     expect(response.user?.externalLinks[0].providerMetadata.value?.screenName).toBe('ivan');
+    expect(response.session?.accessToken?.value).toBe('access.jwt');
+  });
+
+  it('completes VK web auth from provider tokens', async () => {
+    completeVkWebAuthUseCase.execute.mockResolvedValue({
+      user: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        createdAt: now,
+        updatedAt: now,
+        lastActiveAt: now,
+        status: UserStatus.ACTIVE,
+      },
+      externalLinks: [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          userId: '550e8400-e29b-41d4-a716-446655440000',
+          provider: Provider.VK,
+          externalId: '123',
+          providerMeta: { screenName: 'ivan' },
+          linkedAt: now,
+          updatedAt: now,
+        },
+      ],
+      session: {
+        accessToken: 'access.jwt',
+        refreshToken: 'refresh',
+        expiresAt: now,
+      },
+      result: AuthResult.AUTHENTICATED_EXISTING_USER,
+    });
+
+    const response = await controller.completeVkWebAuth(
+      create(CompleteVkWebAuthRequestSchema, {
+        accessToken: create(SensitiveStringSchema, { value: 'vk-access-token' }),
+        refreshToken: create(SensitiveStringSchema, { value: 'vk-refresh-token' }),
+        expiresInSeconds: 3600n,
+        deviceId: 'device-1',
+      }),
+    );
+
+    expect(completeVkWebAuthUseCase.execute).toHaveBeenCalledWith({
+      accessToken: 'vk-access-token',
+      refreshToken: 'vk-refresh-token',
+      expiresInSeconds: 3600,
+      deviceId: 'device-1',
+    });
+    expect(response.result).toBe(AuthResult.AUTHENTICATED_EXISTING_USER);
     expect(response.session?.accessToken?.value).toBe('access.jwt');
   });
 

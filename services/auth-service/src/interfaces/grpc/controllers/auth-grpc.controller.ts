@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import type {
   CompleteVkOAuthRequest,
+  CompleteVkWebAuthRequest,
   CompleteVkOAuthResponse,
   GetExternalLinksRequest,
   GetExternalLinksResponse,
@@ -14,6 +15,7 @@ import type {
 } from '@findnmeet/ts-types/auth/v1';
 
 import { CompleteVkOAuthUseCase } from '../../../auth/application/use-cases/complete-vk-oauth.use-case';
+import { CompleteVkWebAuthUseCase } from '../../../auth/application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from '../../../auth/application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from '../../../auth/application/use-cases/get-user.use-case';
 import { RefreshSessionUseCase } from '../../../auth/application/use-cases/refresh-session.use-case';
@@ -21,6 +23,7 @@ import { RevokeSessionUseCase } from '../../../auth/application/use-cases/revoke
 import {
   completeVkOAuthCommandFromProto,
   completeVkOAuthResponseToProto,
+  completeVkWebAuthCommandFromProto,
   getExternalLinksResponseToProto,
   getUserIdFromProto,
   getUserResponseToProto,
@@ -33,6 +36,7 @@ import {
 export class AuthGrpcController {
   constructor(
     private readonly completeVkOAuthUseCase: CompleteVkOAuthUseCase,
+    private readonly completeVkWebAuthUseCase: CompleteVkWebAuthUseCase,
     private readonly getUserUseCase: GetUserUseCase,
     private readonly getExternalLinksUseCase: GetExternalLinksUseCase,
     private readonly refreshSessionUseCase: RefreshSessionUseCase,
@@ -42,6 +46,12 @@ export class AuthGrpcController {
   @GrpcMethod('AuthService', 'CompleteVkOAuth')
   async completeVkOAuth(request: CompleteVkOAuthRequest): Promise<CompleteVkOAuthResponse> {
     const result = await this.completeVkOAuthUseCase.execute(completeVkOAuthCommandFromProto(request));
+    return completeVkOAuthResponseToProto(result);
+  }
+
+  @GrpcMethod('AuthService', 'CompleteVkWebAuth')
+  async completeVkWebAuth(request: CompleteVkWebAuthRequest): Promise<CompleteVkOAuthResponse> {
+    const result = await this.completeVkWebAuthUseCase.execute(completeVkWebAuthCommandFromProto(request));
     return completeVkOAuthResponseToProto(result);
   }
 

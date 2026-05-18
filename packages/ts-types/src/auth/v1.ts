@@ -2,6 +2,7 @@ export * from '../../.gen/findnmeet/auth/v1/auth_result_pb';
 export * from '../../.gen/findnmeet/auth/v1/authenticated_user_pb';
 export * from '../../.gen/findnmeet/auth/v1/complete_vk_oauth_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/complete_vk_oauth_response_pb';
+export * from '../../.gen/findnmeet/auth/v1/complete_vk_web_auth_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_external_links_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_external_links_response_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_user_request_pb';

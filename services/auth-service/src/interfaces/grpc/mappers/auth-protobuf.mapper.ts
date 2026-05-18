@@ -16,6 +16,7 @@ import {
 import type {
   AuthenticatedUser,
   CompleteVkOAuthRequest,
+  CompleteVkWebAuthRequest,
   CompleteVkOAuthResponse,
   GetExternalLinksRequest,
   GetExternalLinksResponse,
@@ -47,6 +48,15 @@ export function completeVkOAuthCommandFromProto(request: CompleteVkOAuthRequest)
     state: request.state,
     redirectUri: request.redirectUri,
     codeVerifier: request.codeVerifier,
+  };
+}
+
+export function completeVkWebAuthCommandFromProto(request: CompleteVkWebAuthRequest) {
+  return {
+    accessToken: request.accessToken?.value,
+    refreshToken: request.refreshToken?.value,
+    expiresInSeconds: Number(request.expiresInSeconds ?? 0),
+    deviceId: request.deviceId,
   };
 }
 

@@ -20,8 +20,12 @@ type fakeVKClient struct {
 	exchangedVerifier    string
 	profileLookup        string
 	profileAccessToken   string
+	currentAccessToken   string
+	refreshToken         string
+	refreshDeviceID      string
 	exchangeErr          error
 	profileErr           error
+	refreshErr           error
 }
 
 func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
@@ -47,6 +51,29 @@ func (f *fakeVKClient) GetProfile(_ context.Context, lookup string, accessToken 
 	}
 
 	return &vkv1.VkProfile{VkUserId: 123, FirstName: "Ivan", LastName: "Ivanov", ScreenName: "ivan"}, nil
+}
+
+func (f *fakeVKClient) GetCurrentProfile(_ context.Context, accessToken string) (*vkv1.VkProfile, error) {
+	f.currentAccessToken = accessToken
+	if f.profileErr != nil {
+		return nil, f.profileErr
+	}
+
+	return &vkv1.VkProfile{VkUserId: 123, FirstName: "Ivan", LastName: "Ivanov", ScreenName: "ivan"}, nil
+}
+
+func (f *fakeVKClient) RefreshOAuthTokens(_ context.Context, refreshToken string, deviceID string) (*vkv1.VkOAuthTokens, error) {
+	f.refreshToken = refreshToken
+	f.refreshDeviceID = deviceID
+	if f.refreshErr != nil {
+		return nil, f.refreshErr
+	}
+
+	return &vkv1.VkOAuthTokens{
+		AccessToken:  &sharedv1.SensitiveString{Value: "fresh-access-token"},
+		RefreshToken: &sharedv1.SensitiveString{Value: "fresh-refresh-token"},
+		ExpiresIn:    durationpb.New(time.Hour),
+	}, nil
 }
 
 func TestExchangeOAuthCodeReturnsTokensAndProfile(t *testing.T) {
@@ -95,6 +122,25 @@ func TestGetProfileAcceptsVkUserIDLookup(t *testing.T) {
 	}
 	if response.GetProfile().GetScreenName() != "ivan" {
 		t.Fatalf("expected screen name ivan, got %q", response.GetProfile().GetScreenName())
+	}
+}
+
+func TestGetCurrentProfileUsesSuppliedAccessToken(t *testing.T) {
+	client := &fakeVKClient{}
+	service := NewService(client)
+
+	response, err := service.GetCurrentProfile(context.Background(), &vkv1.GetCurrentProfileRequest{
+		AccessToken: &sharedv1.SensitiveString{Value: "vk-access-token"},
+	})
+	if err != nil {
+		t.Fatalf("GetCurrentProfile returned error: %v", err)
+	}
+
+	if client.currentAccessToken != "vk-access-token" {
+		t.Fatalf("expected current profile access token to be forwarded")
+	}
+	if response.GetProfile().GetVkUserId() != 123 {
+		t.Fatalf("expected vk user id 123, got %d", response.GetProfile().GetVkUserId())
 	}
 }
 

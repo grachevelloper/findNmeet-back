@@ -15,7 +15,9 @@ import (
 
 type VKClient interface {
 	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error)
+	GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error)
 	GetProfile(ctx context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error)
+	RefreshOAuthTokens(ctx context.Context, refreshToken string, deviceID string) (*vkv1.VkOAuthTokens, error)
 }
 
 type Service struct {
@@ -61,6 +63,24 @@ func (s *Service) GetProfile(ctx context.Context, req *vkv1.GetProfileRequest) (
 	}
 
 	return &vkv1.GetProfileResponse{Profile: profile}, nil
+}
+
+func (s *Service) GetCurrentProfile(ctx context.Context, req *vkv1.GetCurrentProfileRequest) (*vkv1.GetCurrentProfileResponse, error) {
+	profile, err := s.client.GetCurrentProfile(ctx, sensitiveValue(req.GetAccessToken()))
+	if err != nil {
+		return nil, grpcError(err)
+	}
+
+	return &vkv1.GetCurrentProfileResponse{Profile: profile}, nil
+}
+
+func (s *Service) RefreshOAuthTokens(ctx context.Context, req *vkv1.RefreshOAuthTokensRequest) (*vkv1.RefreshOAuthTokensResponse, error) {
+	tokens, err := s.client.RefreshOAuthTokens(ctx, sensitiveValue(req.GetRefreshToken()), strings.TrimSpace(req.GetDeviceId()))
+	if err != nil {
+		return nil, grpcError(err)
+	}
+
+	return &vkv1.RefreshOAuthTokensResponse{Tokens: tokens}, nil
 }
 
 func (s *Service) SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {

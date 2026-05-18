@@ -8,9 +8,9 @@
     "dev:search": "pnpm --filter search-orchestrator dev",
     "dev:favorites": "pnpm --filter favorites-service dev",
     "dev:ai": "pnpm --filter ai-service dev",
-    "types": "pnpm --dir packages/ts-types build",
-    "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down"
+    "dev:certs": "sh ./scripts/dev/generate-local-tls.sh",
+    "dev:stack": "sh ./scripts/dev/generate-local-tls.sh && docker compose --env-file .env.dev -f docker-compose.dev.yml up --build",
+    "dev:stack:down": "docker compose --env-file .env.dev -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.69.0",
