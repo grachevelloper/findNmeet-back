@@ -2,8 +2,11 @@ syntax = "proto3";
 
 package findnmeet.ai.v1;
 
+import "findnmeet/ai/v1/parse_search_query_status.proto";
 import "findnmeet/search/v1/search_criteria.proto";
 
 message ParseSearchQueryResponse {
-  .findnmeet.search.v1.SearchCriteria  criteria = 1;
+  ParseSearchQueryStatus               status = 1;
+  string                               message = 2;
+  .findnmeet.search.v1.SearchCriteria  criteria = 3;
 }
