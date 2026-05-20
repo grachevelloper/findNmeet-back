@@ -6,7 +6,7 @@ import "findnmeet/ai/v1/parse_search_query_status.proto";
 import "findnmeet/search/v1/search_criteria.proto";
 
 message ParseSearchQueryResponse {
-  ParseSearchQueryStatus               status = 1;
-  string                               message = 2;
-  .findnmeet.search.v1.SearchCriteria  criteria = 3;
+  .findnmeet.search.v1.SearchCriteria  criteria = 1;
+  ParseSearchQueryStatus               status = 2;
+  string                               message = 3;
 }

@@ -14,26 +14,26 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file findnmeet/ai/v1/parse_search_query_response.proto.
  */
 export const file_findnmeet_ai_v1_parse_search_query_response: GenFile = /*@__PURE__*/
-  fileDesc("CjFmaW5kbm1lZXQvYWkvdjEvcGFyc2Vfc2VhcmNoX3F1ZXJ5X3Jlc3BvbnNlLnByb3RvEg9maW5kbm1lZXQuYWkudjEimwEKGFBhcnNlU2VhcmNoUXVlcnlSZXNwb25zZRI3CgZzdGF0dXMYASABKA4yJy5maW5kbm1lZXQuYWkudjEuUGFyc2VTZWFyY2hRdWVyeVN0YXR1cxIPCgdtZXNzYWdlGAIgASgJEjUKCGNyaXRlcmlhGAMgASgLMiMuZmluZG5tZWV0LnNlYXJjaC52MS5TZWFyY2hDcml0ZXJpYWIGcHJvdG8z", [file_findnmeet_ai_v1_parse_search_query_status, file_findnmeet_search_v1_search_criteria]);
+  fileDesc("CjFmaW5kbm1lZXQvYWkvdjEvcGFyc2Vfc2VhcmNoX3F1ZXJ5X3Jlc3BvbnNlLnByb3RvEg9maW5kbm1lZXQuYWkudjEimwEKGFBhcnNlU2VhcmNoUXVlcnlSZXNwb25zZRI1Cghjcml0ZXJpYRgBIAEoCzIjLmZpbmRubWVldC5zZWFyY2gudjEuU2VhcmNoQ3JpdGVyaWESNwoGc3RhdHVzGAIgASgOMicuZmluZG5tZWV0LmFpLnYxLlBhcnNlU2VhcmNoUXVlcnlTdGF0dXMSDwoHbWVzc2FnZRgDIAEoCWIGcHJvdG8z", [file_findnmeet_ai_v1_parse_search_query_status, file_findnmeet_search_v1_search_criteria]);
 
 /**
  * @generated from message findnmeet.ai.v1.ParseSearchQueryResponse
  */
 export type ParseSearchQueryResponse = Message<"findnmeet.ai.v1.ParseSearchQueryResponse"> & {
   /**
-   * @generated from field: findnmeet.ai.v1.ParseSearchQueryStatus status = 1;
+   * @generated from field: findnmeet.search.v1.SearchCriteria criteria = 1;
+   */
+  criteria?: SearchCriteria | undefined;
+
+  /**
+   * @generated from field: findnmeet.ai.v1.ParseSearchQueryStatus status = 2;
    */
   status: ParseSearchQueryStatus;
 
   /**
-   * @generated from field: string message = 2;
+   * @generated from field: string message = 3;
    */
   message: string;
-
-  /**
-   * @generated from field: findnmeet.search.v1.SearchCriteria criteria = 3;
-   */
-  criteria?: SearchCriteria | undefined;
 };
 
 /**
