@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { favoriteNotFound } from '../../domain/errors/favorite-not-found';
-import type { Favorite } from '../../domain/models/favorite';
-import { FavoritesRepository } from '../../domain/ports/favorites.repository';
-import { requireUuid } from '../../domain/requirements';
-import type { DeleteFavoriteCommand } from '../contracts/favorites.commands';
+import { favoriteNotFound } from '../../../domain/errors/favorite-not-found';
+import type { Favorite } from '../../../domain/models/favorite';
+import { FavoritesRepository } from '../../../domain/ports/favorites.repository';
+import { requireUuid } from '../../../domain/requirements';
+import type { DeleteFavoriteCommand } from '../../contracts/favorites.commands';
 
 @Injectable()
 export class DeleteFavoriteUseCase {

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { FavoritesRepository } from '../../domain/ports/favorites.repository';
-import type { ListFavoritesQuery } from '../contracts/favorites.commands';
-import type { ListFavoritesResult } from '../contracts/favorites.results';
-import { parsePageOffset } from '../pagination/parse-page-offset';
-import { resolvePageSize } from '../pagination/resolve-page-size';
+import { FavoritesRepository } from '../../../domain/ports/favorites.repository';
+import type { ListFavoritesQuery } from '../../contracts/favorites.commands';
+import type { ListFavoritesResult } from '../../contracts/favorites.results';
+import { parsePageOffset } from '../../pagination/parse-page-offset';
+import { resolvePageSize } from '../../pagination/resolve-page-size';
 
 @Injectable()
 export class ListFavoritesUseCase {

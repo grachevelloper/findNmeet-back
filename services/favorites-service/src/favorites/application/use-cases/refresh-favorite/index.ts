@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { favoriteNotFound } from '../../domain/errors/favorite-not-found';
-import type { Favorite } from '../../domain/models/favorite';
-import { createFavorite } from '../../domain/favorite.factory';
-import { FavoritesRepository } from '../../domain/ports/favorites.repository';
-import { requireUuid } from '../../domain/requirements';
-import type { RefreshFavoriteCommand } from '../contracts/favorites.commands';
+import { favoriteNotFound } from '../../../domain/errors/favorite-not-found';
+import type { Favorite } from '../../../domain/models/favorite';
+import { createFavorite } from '../../../domain/favorite.factory';
+import { FavoritesRepository } from '../../../domain/ports/favorites.repository';
+import { requireUuid } from '../../../domain/requirements';
+import type { RefreshFavoriteCommand } from '../../contracts/favorites.commands';
 
 @Injectable()
 export class RefreshFavoriteUseCase {

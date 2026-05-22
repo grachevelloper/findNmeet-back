@@ -17,12 +17,12 @@ import type {
 } from '@findnmeet/ts-types/favorites/v1';
 
 import { currentUserId } from '../metadata/current-user-id';
-import { CreateFavoriteUseCase } from '../../../favorites/application/use-cases/create-favorite.use-case';
-import { DeleteFavoriteUseCase } from '../../../favorites/application/use-cases/delete-favorite.use-case';
-import { GetFavoriteUseCase } from '../../../favorites/application/use-cases/get-favorite.use-case';
-import { ListFavoritesUseCase } from '../../../favorites/application/use-cases/list-favorites.use-case';
-import { RefreshFavoriteUseCase } from '../../../favorites/application/use-cases/refresh-favorite.use-case';
-import { UpdateFavoriteUseCase } from '../../../favorites/application/use-cases/update-favorite.use-case';
+import { CreateFavoriteUseCase } from '../../../favorites/application/use-cases/create-favorite';
+import { DeleteFavoriteUseCase } from '../../../favorites/application/use-cases/delete-favorite';
+import { GetFavoriteUseCase } from '../../../favorites/application/use-cases/get-favorite';
+import { ListFavoritesUseCase } from '../../../favorites/application/use-cases/list-favorites';
+import { RefreshFavoriteUseCase } from '../../../favorites/application/use-cases/refresh-favorite';
+import { UpdateFavoriteUseCase } from '../../../favorites/application/use-cases/update-favorite';
 import {
   createFavoriteCommandFromProto,
   createFavoriteResponseToProto,

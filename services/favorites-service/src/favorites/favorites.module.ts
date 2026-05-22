@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CreateFavoriteUseCase } from './application/use-cases/create-favorite.use-case';
-import { DeleteFavoriteUseCase } from './application/use-cases/delete-favorite.use-case';
-import { GetFavoriteUseCase } from './application/use-cases/get-favorite.use-case';
-import { ListFavoritesUseCase } from './application/use-cases/list-favorites.use-case';
-import { RefreshFavoriteUseCase } from './application/use-cases/refresh-favorite.use-case';
-import { UpdateFavoriteUseCase } from './application/use-cases/update-favorite.use-case';
+import { CreateFavoriteUseCase } from './application/use-cases/create-favorite';
+import { DeleteFavoriteUseCase } from './application/use-cases/delete-favorite';
+import { GetFavoriteUseCase } from './application/use-cases/get-favorite';
+import { ListFavoritesUseCase } from './application/use-cases/list-favorites';
+import { RefreshFavoriteUseCase } from './application/use-cases/refresh-favorite';
+import { UpdateFavoriteUseCase } from './application/use-cases/update-favorite';
 import { FavoritesRepository } from './domain/ports/favorites.repository';
 import { FavoriteEntity } from './infrastructure/persistence/favorite.entity';
 import { TypeOrmFavoritesRepository } from './infrastructure/persistence/typeorm-favorites.repository';

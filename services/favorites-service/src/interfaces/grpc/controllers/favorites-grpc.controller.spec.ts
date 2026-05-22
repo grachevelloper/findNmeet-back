@@ -1,5 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
 import { create } from '@bufbuild/protobuf';
+import { BadRequestException } from '@nestjs/common';
 import { Metadata, status } from '@grpc/grpc-js';
 import { FieldMaskSchema } from '@bufbuild/protobuf/wkt';
 import {
@@ -12,20 +12,20 @@ import {
 } from '@findnmeet/ts-types/favorites/v1';
 import { PageRequestSchema, Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
 
-import { FavoritesGrpcController } from '../src/interfaces/grpc/controllers/favorites-grpc.controller';
-import { HttpExceptionRpcFilter } from '../src/interfaces/grpc/filters/http-exception-rpc.filter';
-import { CreateFavoriteUseCase } from '../src/favorites/application/use-cases/create-favorite.use-case';
-import { DeleteFavoriteUseCase } from '../src/favorites/application/use-cases/delete-favorite.use-case';
-import { GetFavoriteUseCase } from '../src/favorites/application/use-cases/get-favorite.use-case';
-import { ListFavoritesUseCase } from '../src/favorites/application/use-cases/list-favorites.use-case';
-import { RefreshFavoriteUseCase } from '../src/favorites/application/use-cases/refresh-favorite.use-case';
-import { UpdateFavoriteUseCase } from '../src/favorites/application/use-cases/update-favorite.use-case';
+import { CreateFavoriteUseCase } from '../../../favorites/application/use-cases/create-favorite';
+import { DeleteFavoriteUseCase } from '../../../favorites/application/use-cases/delete-favorite';
+import { GetFavoriteUseCase } from '../../../favorites/application/use-cases/get-favorite';
+import { ListFavoritesUseCase } from '../../../favorites/application/use-cases/list-favorites';
+import { RefreshFavoriteUseCase } from '../../../favorites/application/use-cases/refresh-favorite';
+import { UpdateFavoriteUseCase } from '../../../favorites/application/use-cases/update-favorite';
+import { HttpExceptionRpcFilter } from '../filters/http-exception-rpc.filter';
 import {
   createFavoriteRequest,
   createRepositoryFake,
   favoriteIdRequest,
   metadataWithUserId,
-} from './__fixtures__/favorites';
+} from '../../../../tests/__fixtures__/favorites';
+import { FavoritesGrpcController } from './favorites-grpc.controller';
 
 describe('FavoritesGrpcController', () => {
   let controller: FavoritesGrpcController;
@@ -86,7 +86,10 @@ describe('FavoritesGrpcController', () => {
 
     expect(updateRes.favorite?.note).toBe('updated');
 
-    const refreshRes = await controller.refreshFavorite(favoriteIdRequest(RefreshFavoriteRequestSchema, favoriteId), metadataWithUserId());
+    const refreshRes = await controller.refreshFavorite(
+      favoriteIdRequest(RefreshFavoriteRequestSchema, favoriteId),
+      metadataWithUserId(),
+    );
 
     expect(refreshRes.favorite?.id?.value).toBe(favoriteId);
     expect(refreshRes.favorite?.addedAt).toEqual(createRes.favorite?.addedAt);

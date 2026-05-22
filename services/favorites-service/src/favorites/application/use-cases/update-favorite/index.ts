@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { favoriteNotFound } from '../../domain/errors/favorite-not-found';
-import { unsupportedUpdateMask } from '../../domain/errors/unsupported-update-mask';
-import type { Favorite } from '../../domain/models/favorite';
-import { FavoritesRepository } from '../../domain/ports/favorites.repository';
-import { requireUuid } from '../../domain/requirements';
-import type { UpdateFavoriteCommand } from '../contracts/favorites.commands';
+import { favoriteNotFound } from '../../../domain/errors/favorite-not-found';
+import { unsupportedUpdateMask } from '../../../domain/errors/unsupported-update-mask';
+import type { Favorite } from '../../../domain/models/favorite';
+import { FavoritesRepository } from '../../../domain/ports/favorites.repository';
+import { requireUuid } from '../../../domain/requirements';
+import type { UpdateFavoriteCommand } from '../../contracts/favorites.commands';
 
 @Injectable()
 export class UpdateFavoriteUseCase {

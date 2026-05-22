@@ -1,13 +1,13 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 
-import { favoriteExists } from '../../domain/errors/favorite-exists';
-import type { Favorite } from '../../domain/models/favorite';
-import { createFavorite } from '../../domain/favorite.factory';
-import { createUuid } from '../../domain/identifiers/create-uuid';
-import { FavoritesRepository } from '../../domain/ports/favorites.repository';
-import { requireExternalId, requireSupportedProvider } from '../../domain/requirements';
-import type { CreateFavoriteCommand } from '../contracts/favorites.commands';
+import { favoriteExists } from '../../../domain/errors/favorite-exists';
+import type { Favorite } from '../../../domain/models/favorite';
+import { createFavorite } from '../../../domain/favorite.factory';
+import { createUuid } from '../../../domain/identifiers/create-uuid';
+import { FavoritesRepository } from '../../../domain/ports/favorites.repository';
+import { requireExternalId, requireSupportedProvider } from '../../../domain/requirements';
+import type { CreateFavoriteCommand } from '../../contracts/favorites.commands';
 
 @Injectable()
 export class CreateFavoriteUseCase {

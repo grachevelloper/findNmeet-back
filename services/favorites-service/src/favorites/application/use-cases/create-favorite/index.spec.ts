@@ -1,6 +1,6 @@
-import { FavoriteProvider } from '../src/favorites/domain/models/favorite-provider';
-import { CreateFavoriteUseCase } from '../src/favorites/application/use-cases/create-favorite.use-case';
-import { createRepositoryFake } from './__fixtures__/favorites';
+import { FavoriteProvider } from '../../../domain/models/favorite-provider';
+import { createRepositoryFake } from '../../../../../tests/__fixtures__/favorites';
+import { CreateFavoriteUseCase } from '.';
 
 const ownerId = '550e8400-e29b-41d4-a716-446655440000';
 
