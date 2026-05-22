@@ -5,6 +5,7 @@ import {
   CompleteVkOAuthResponseSchema,
   GetExternalLinksResponseSchema,
   GetUserResponseSchema,
+  GetVkAccessTokenResponseSchema,
   RefreshSessionResponseSchema,
   RevokeSessionResponseSchema,
   SessionSchema,
@@ -21,6 +22,8 @@ import type {
   GetExternalLinksResponse,
   GetUserRequest,
   GetUserResponse,
+  GetVkAccessTokenRequest,
+  GetVkAccessTokenResponse,
   RefreshSessionRequest,
   RefreshSessionResponse,
   RevokeSessionRequest,
@@ -50,7 +53,9 @@ export function completeVkOAuthCommandFromProto(request: CompleteVkOAuthRequest)
   };
 }
 
-export function getUserIdFromProto(request: GetUserRequest | GetExternalLinksRequest): string | undefined {
+export function getUserIdFromProto(
+  request: GetUserRequest | GetExternalLinksRequest | GetVkAccessTokenRequest,
+): string | undefined {
   return request.userId?.value;
 }
 
@@ -72,6 +77,12 @@ export function getUserResponseToProto(result: AuthenticatedUserResult): GetUser
 
 export function getExternalLinksResponseToProto(externalLinks: DomainUserExternalLink[]): GetExternalLinksResponse {
   return create(GetExternalLinksResponseSchema, { externalLinks: externalLinks.map(externalLinkToProto) });
+}
+
+export function getVkAccessTokenResponseToProto(accessToken: string): GetVkAccessTokenResponse {
+  return create(GetVkAccessTokenResponseSchema, {
+    accessToken: create(SensitiveStringSchema, { value: accessToken }),
+  });
 }
 
 export function refreshSessionResponseToProto(result: RefreshSessionResult): RefreshSessionResponse {

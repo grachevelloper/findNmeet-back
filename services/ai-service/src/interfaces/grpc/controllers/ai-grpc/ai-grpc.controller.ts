@@ -6,11 +6,11 @@ import type {
   ParseSearchQueryResponse,
 } from '@findnmeet/ts-types/ai/v1';
 
-import { ParseSearchQueryUseCase } from '../../../search-query/application/use-cases/parse-search-query/parse-search-query.use-case';
+import { ParseSearchQueryUseCase } from '../../../../search-query/application/use-cases/parse-search-query/parse-search-query.use-case';
 import {
   parseSearchQueryRequestFromProto,
   parseSearchQueryResponseToProto,
-} from '../mappers/ai-protobuf/ai-protobuf.mapper';
+} from '../../mappers/ai-protobuf/ai-protobuf.mapper';
 
 @Controller()
 export class AiGrpcController {

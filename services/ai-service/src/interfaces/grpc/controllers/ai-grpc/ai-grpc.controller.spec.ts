@@ -1,5 +1,5 @@
 import { AiGrpcController } from './ai-grpc.controller';
-import { VkRelationStatus } from '../../../search-query/domain/models/vk-search-filters';
+import { VkRelationStatus } from '../../../../search-query/domain/models/vk-search-filters';
 
 describe('AiGrpcController', () => {
   it('passes user id and command to use case', async () => {

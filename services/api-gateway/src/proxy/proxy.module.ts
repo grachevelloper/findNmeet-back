@@ -39,6 +39,20 @@ import { ProxyService } from './proxy.service';
           },
         }),
       },
+      {
+        name: 'SEARCH_GRPC_CLIENT',
+        useFactory: () => ({
+          transport: Transport.GRPC,
+          options: {
+            url: gatewayConfig().aiServiceGrpcUrl,
+            package: 'findnmeet.search.v1',
+            protoPath: join(contractsProtoRoot(), 'findnmeet/search/v1/service.proto'),
+            loader: {
+              includeDirs: [contractsProtoRoot()],
+            },
+          },
+        }),
+      },
     ]),
   ],
   controllers: [ProxyController],

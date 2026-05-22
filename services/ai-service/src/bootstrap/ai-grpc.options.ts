@@ -11,14 +11,21 @@ export function AiGrpcOptions(): GrpcOptions {
   return {
     transport: Transport.GRPC,
     options: {
-      package: 'findnmeet.ai.v1',
-      protoPath: [healthCheckProtoPath, join(contractsProtoRoot, 'findnmeet/ai/v1/service.proto')],
+      package: ['findnmeet.ai.v1', 'findnmeet.search.v1'],
+      protoPath: [
+        healthCheckProtoPath,
+        join(contractsProtoRoot, 'findnmeet/ai/v1/service.proto'),
+        join(contractsProtoRoot, 'findnmeet/search/v1/service.proto'),
+      ],
       url: process.env.AI_SERVICE_GRPC_URL ?? '0.0.0.0:50053',
       loader: {
         includeDirs: [contractsProtoRoot],
       },
       onLoadPackageDefinition: (_packageDefinition, server) =>
-        registerGrpcHealthCheck(server, 'findnmeet.ai.v1.AiService'),
+        registerGrpcHealthCheck(server, [
+          'findnmeet.ai.v1.AiService',
+          'findnmeet.search.v1.SearchOrchestratorService',
+        ]),
     },
   };
 }

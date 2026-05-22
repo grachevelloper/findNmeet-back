@@ -16,6 +16,7 @@ import (
 type VKClient interface {
 	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error)
 	GetProfile(ctx context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error)
+	SearchProfiles(ctx context.Context, filters *vkv1.VkSearchFilters, page *sharedv1.PageRequest, accessToken string) (*vkv1.VkSearchResult, *sharedv1.PageResponse, error)
 }
 
 type Service struct {
@@ -63,8 +64,20 @@ func (s *Service) GetProfile(ctx context.Context, req *vkv1.GetProfileRequest) (
 	return &vkv1.GetProfileResponse{Profile: profile}, nil
 }
 
-func (s *Service) SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "SearchProfiles is not implemented yet")
+func (s *Service) SearchProfiles(ctx context.Context, req *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {
+	if req.GetFilters() == nil {
+		return nil, status.Error(codes.InvalidArgument, "filters is required")
+	}
+
+	result, page, err := s.client.SearchProfiles(ctx, req.GetFilters(), req.GetPage(), sensitiveValue(req.GetAccessToken()))
+	if err != nil {
+		return nil, grpcError(err)
+	}
+
+	return &vkv1.SearchProfilesResponse{
+		Result: result,
+		Page:   page,
+	}, nil
 }
 
 func profileLookup(lookup *vkv1.VkProfileLookup) (string, error) {

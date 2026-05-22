@@ -13,7 +13,6 @@ The project is a microservice-oriented backend for VK-based people search, authe
 ├── services/
 │   ├── api-gateway/
 │   ├── auth-service/
-│   ├── search-orchestrator/
 │   ├── favorites-service/
 │   ├── ai-service/
 │   └── vk-gateway/
@@ -40,18 +39,16 @@ The project is a microservice-oriented backend for VK-based people search, authe
 flowchart LR
     FE[Frontend] --> GW[api-gateway]
     GW --> AUTH[auth-service]
-    GW --> SEARCH[search-orchestrator]
     GW --> FAV[favorites-service]
     GW --> AI[ai-service]
     AUTH --> VKG[vk-gateway]
-    SEARCH --> VKG
     FAV --> VKG
+    AI --> VKG
     AUTH --> PG[(PostgreSQL)]
     FAV --> PG
-    SEARCH --> REDIS[(Redis)]
 ```
 
-The diagram reflects the intended service boundaries from the repository names, environment variables, and domain spec. In the current implementation, `auth-service` and `favorites-service` already own their domain logic behind gRPC transports, while `search-orchestrator`, `ai-service`, and `vk-gateway` are still comparatively thin.
+The diagram reflects the intended MVP service boundaries from the repository names, environment variables, and domain spec. In the current implementation, `auth-service` and `favorites-service` already own their domain logic behind gRPC transports, while `ai-service` and `vk-gateway` are still comparatively thin.
 
 ## Services
 
@@ -99,26 +96,6 @@ Target responsibility from the domain spec:
 - User and external identity persistence.
 - Auth token storage and refresh metadata.
 - Session or user-token issuance for API Gateway.
-
-### `services/search-orchestrator`
-
-Express service intended to orchestrate search flows.
-
-Current files:
-
-- `src/app.ts` creates an Express app with JSON middleware and `GET /health`.
-- `src/index.ts` starts the server.
-- `src/app.spec.ts` tests the health response.
-
-Default port:
-
-- `SEARCH_ORCHESTRATOR_PORT=3002`
-
-Expected boundary:
-
-- Search request composition.
-- Calls to `vk-gateway` for VK people/profile data.
-- Possible Redis usage for caching or coordination.
 
 ### `services/favorites-service`
 
@@ -252,12 +229,10 @@ Important constraints:
 `docker-compose.yml` starts local infrastructure:
 
 - PostgreSQL 16 on `localhost:5432`
-- Redis 7 on `localhost:6379`
 
 `.env.example` defines:
 
 - `POSTGRES_URL`
-- `REDIS_URL`
 - VK OAuth settings
 - `OPENAI_API_KEY`
 - JWT settings
@@ -270,7 +245,6 @@ Root scripts:
 
 - `pnpm dev:gateway`
 - `pnpm dev:auth`
-- `pnpm dev:search`
 - `pnpm dev:favorites`
 - `pnpm dev:ai`
 - `pnpm infra:up`
@@ -296,15 +270,15 @@ Implemented:
 - Monorepo structure.
 - `auth-service` gRPC flows with TypeORM-backed persistence, VK gateway integration, and session/token handling.
 - `favorites-service` gRPC CRUD flows with TypeORM-backed persistence and domain logic.
-- Bootstrap-level implementations for `search-orchestrator`, `ai-service`, and `vk-gateway`.
+- AI-assisted search query parsing in `ai-service`.
+- Bootstrap-level VK integration in `vk-gateway`.
 - Shared packages for contracts and utilities.
-- Local PostgreSQL and Redis compose file.
+- Local PostgreSQL compose file.
 - Auth/favorites domain and API contract documentation.
 
 Planned or partially wired:
 
 - API Gateway as public HTTP entry point.
-- Search orchestration.
 - AI-backed features.
 
 Known inconsistencies to resolve:
@@ -392,4 +366,3 @@ SmtpEmailSender реализует application.EmailSender.
 Плохо: orderController.Create(...) -> внутри лезет в БД и меняет статус заказа.
 
 Хорошо: orderController.Create(...) -> создает CreateOrderCommand -> вызывает application.OrderService.Create(cmd) -> а уже сервис работает с репозиторием и доменом.
-

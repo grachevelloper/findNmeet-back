@@ -15,16 +15,19 @@ type ServiceMap = Record<string, GrpcMethod>;
 export class ProxyService implements OnModuleInit {
   private authService!: ServiceMap;
   private favoritesService!: ServiceMap;
+  private searchService!: ServiceMap;
   private readonly config = gatewayConfig();
 
   constructor(
     @Inject('AUTH_GRPC_CLIENT') private readonly authClient: ClientGrpc,
     @Inject('FAVORITES_GRPC_CLIENT') private readonly favoritesClient: ClientGrpc,
+    @Inject('SEARCH_GRPC_CLIENT') private readonly searchClient: ClientGrpc,
   ) {}
 
   onModuleInit(): void {
     this.authService = this.authClient.getService<ServiceMap>('AuthService');
     this.favoritesService = this.favoritesClient.getService<ServiceMap>('FavoritesService');
+    this.searchService = this.searchClient.getService<ServiceMap>('SearchOrchestratorService');
   }
 
   findRoute(method: string, path: string): GatewayRoute | undefined {
@@ -44,7 +47,12 @@ export class ProxyService implements OnModuleInit {
       requestPayload,
     );
     const metadata = route.metadataUserId ? metadataWithUserId(auth) : undefined;
-    const service = route.service === 'auth' ? this.authService : this.favoritesService;
+    const service =
+      route.service === 'auth'
+        ? this.authService
+        : route.service === 'favorites'
+          ? this.favoritesService
+          : this.searchService;
     const method = service[route.rpc];
 
     if (typeof method !== 'function') {
