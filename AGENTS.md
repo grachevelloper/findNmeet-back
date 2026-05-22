@@ -4,7 +4,13 @@
 
 FindNMeet backend is a pnpm workspace with service packages under `services/*` and shared TypeScript packages under `packages/*`.
 
-The project is a microservice-oriented backend for VK-based people search, authentication, favorites, AI features, and API composition. Service maturity is uneven: `auth-service` and `favorites-service` already contain gRPC application logic, persistence, and domain modules, while some other services are still closer to bootstrap-level implementations. The broader domain model and auth/favorites target contracts are documented in `docs/superpowers/specs/2026-05-03-auth-favorites-domain-and-contracts.md`.
+The project is a microservice-oriented backend for VK-based people search, authentication, favorites, AI features, and API composition. Service maturity is uneven: `auth-service` and `favorites-service` already contain gRPC application logic, persistence, and domain modules, while some other services are still closer to bootstrap-level implementations.
+
+Important current auth docs:
+
+- `docs/superpowers/specs/2026-05-03-auth-favorites-domain-and-contracts.md`
+- `docs/superpowers/specs/2026-05-15-vk-id-web-auth-and-vk-credential-lifecycle-design.md`
+- `docs/frontend-vk-web-auth-api.md`
 
 ## Workspace Layout
 
@@ -54,13 +60,15 @@ The diagram reflects the intended MVP service boundaries from the repository nam
 
 ### `services/api-gateway`
 
-NestJS service intended to be the public API entry point.
+NestJS HTTP service that acts as the public API entry point and thin transport proxy to internal gRPC services.
 
 Current files:
 
-- `src/app.module.ts` registers `HealthController`.
+- `src/app.module.ts` wires `AuthModule`, `ProxyModule`, and `HealthController`.
 - `src/health/health.controller.ts` exposes `GET /health`.
-- `src/main.ts` creates a Nest TCP microservice on `127.0.0.1:8888`.
+- `src/main.ts` starts an HTTP Nest application, sets global prefix `/api/v1`, enables CORS, validation, and cookie parsing.
+- `src/proxy/*` contains the thin route-to-gRPC dispatch layer.
+- `src/config/gateway.config.ts` defines the public HTTP surface and cookie behavior.
 
 Scripts:
 
@@ -69,11 +77,20 @@ Scripts:
 - `start:prod`: `node dist/main`
 - `test`: `jest`
 
-Default environment variable from `.env.example` suggests an HTTP gateway port:
+Important current public auth routes:
 
-- `API_GATEWAY_PORT=3000`
+- `POST /api/v1/auth/complete-vk-web-auth`
+- `POST /api/v1/auth/complete-vk-oauth`
+- `POST /api/v1/auth/get-user`
+- `POST /api/v1/auth/refresh-session`
+- `POST /api/v1/auth/revoke-session`
 
-Current note: `main.ts` does not start an HTTP Nest application, while tests instantiate an HTTP app and verify `GET /health`.
+Session delivery is cookie-based:
+
+- access cookie: `fm_access_token`
+- refresh cookie: `fm_refresh_token`
+
+Frontend clients must send requests with credentials enabled.
 
 ### `services/auth-service`
 
@@ -84,18 +101,30 @@ Current files:
 - `src/app.module.ts` wires `AuthModule`, TypeORM, and `AuthGrpcController`.
 - `src/index.ts` starts a Nest gRPC microservice.
 - `src/auth/*` contains application, domain, persistence, VK integration, and security logic.
-- `src/grpc/controllers/auth-grpc.controller.ts` exposes auth RPC methods including VK OAuth completion, user lookup, external links, session refresh, and revoke.
+- `src/interfaces/grpc/controllers/auth-grpc.controller.ts` exposes auth RPC methods including:
+  - backend-side OAuth code completion;
+  - frontend-token-based VK Web auth completion;
+  - user lookup;
+  - external link lookup;
+  - session refresh and revoke.
 
 Default port:
 
 - `AUTH_SERVICE_PORT=3001`
 
-Target responsibility from the domain spec:
+Current implemented responsibility:
 
-- VK OAuth callback handling.
-- User and external identity persistence.
-- Auth token storage and refresh metadata.
-- Session or user-token issuance for API Gateway.
+- local user creation and lookup for VK-linked identities;
+- persistence of `User`, `UserExternalLink`, `AuthToken`, and `AuthSession`;
+- issuing local FindNMeet access and refresh tokens;
+- accepting frontend VK Web auth payload and verifying it through `vk-gateway`;
+- storing VK credentials in encrypted form;
+- exposing session refresh and revoke flows.
+
+Current note:
+
+- local session refresh is implemented;
+- server-side VK credential refresh contract exists, but the actual VK refresh call is not implemented yet in `vk-gateway`.
 
 ### `services/favorites-service`
 
@@ -143,19 +172,26 @@ Go service that isolates VK API access.
 
 Current files:
 
-- `cmd/server/main.go` starts an HTTP server with `GET /health`.
-- `cmd/server/main_test.go` tests the health handler.
+- `cmd/server/main.go` starts the gRPC server plus an HTTP health endpoint.
+- `internal/vkgateway/*` contains gRPC transport and service orchestration.
+- `internal/vkapi/*` contains direct VK API HTTP client logic.
+- `cmd/server/main_test.go` and `internal/vkgateway/service_test.go` cover health and gRPC behavior.
 - `go.mod` declares module `github.com/findnmeet/vk-gateway` with Go 1.21.
 
 Default port:
 
 - `VK_GATEWAY_PORT=8080`
 
-Target responsibility from the domain spec:
+Current implemented responsibility:
 
-- VK OAuth token exchange.
-- VK user info/profile lookup.
-- Shield other services from VK API details.
+- VK OAuth code exchange;
+- VK profile lookup by explicit lookup + access token;
+- current-user VK profile verification by access token for frontend-token-based Web auth;
+- gRPC adapter shielding TypeScript services from VK API details.
+
+Current note:
+
+- `RefreshOAuthTokens` RPC is present in the contract, but backend refresh logic is still a stub in `internal/vkapi/client.go`.
 
 ## Shared Packages
 
@@ -199,7 +235,7 @@ Current export:
 
 Used by all TypeScript services for health responses.
 
-Current note: `packages/utils/tsconfig.json` points `rootDir` and `outDir` to `../ts-utils/*`, while the actual package directory is `packages/utils`. Package manifests and some Jest mappings also mention `ts-utils`, so this area needs cleanup before relying on package builds.
+Current note: `packages/utils` currently builds with local `src -> dist` layout and is used by TypeScript services for health payloads.
 
 ## Contracts And Domain Model
 
@@ -234,10 +270,26 @@ Important constraints:
 
 - `POSTGRES_URL`
 - VK OAuth settings
+- `REDIS_URL`
+- VK app and OAuth-related settings
 - `OPENAI_API_KEY`
 - JWT settings
 - token encryption key
 - service ports
+
+Important current auth/VK-related env values:
+
+- `VK_APP_ID`
+- `VK_APP_SECRET`
+- `VK_REDIRECT_URI`
+- `VK_API_VERSION`
+- `VK_OAUTH_URL`
+- `VK_API_URL`
+- `TOKEN_ENCRYPTION_KEY`
+- `USER_JWT_PRIVATE_KEY`
+- `USER_JWT_PUBLIC_KEY`
+- `USER_JWT_EXPIRES_IN`
+- `USER_REFRESH_EXPIRES_IN`
 
 ## Development Commands
 
@@ -268,7 +320,8 @@ go test ./...
 Implemented:
 
 - Monorepo structure.
-- `auth-service` gRPC flows with TypeORM-backed persistence, VK gateway integration, and session/token handling.
+- `api-gateway` as a running HTTP public edge with `/api/v1` prefix, cookie-based auth handling, and thin proxy routing.
+- `auth-service` gRPC flows with TypeORM-backed persistence, VK gateway integration, local session handling, and frontend-token-based VK Web auth completion.
 - `favorites-service` gRPC CRUD flows with TypeORM-backed persistence and domain logic.
 - AI-assisted search query parsing in `ai-service`.
 - Bootstrap-level VK integration in `vk-gateway`.
@@ -279,11 +332,20 @@ Implemented:
 Planned or partially wired:
 
 - API Gateway as public HTTP entry point.
+- `vk-gateway` gRPC surface for OAuth code exchange, current-profile verification by VK access token, and explicit profile lookup.
+- Shared packages for contracts and utilities.
+- Local PostgreSQL and Redis compose file.
+- Auth/favorites domain and VK Web auth documentation.
+
+Planned or partially wired:
+
+- server-side VK credential refresh through `vk-gateway`;
+- search orchestration;
 - AI-backed features.
 
 Known inconsistencies to resolve:
-- `packages/utils/tsconfig.json` references `../ts-utils`, which is not a workspace package directory.
-- `api-gateway/src/main.ts` starts a TCP microservice but does not call `listen()` and does not match the HTTP health check used by tests.
+- `.env.example` still contains some older VK naming/history and should be kept aligned with actual runtime usage.
+- VK Web auth is implemented for login completion, but automatic VK token refresh is not finished yet.
 
 1. Domain Layer (Центр. Святая святых)
 О чем может знать:

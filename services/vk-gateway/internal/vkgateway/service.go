@@ -15,6 +15,7 @@ import (
 
 type VKClient interface {
 	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error)
+	GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error)
 	GetProfile(ctx context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error)
 	SearchProfiles(ctx context.Context, filters *vkv1.VkSearchFilters, page *sharedv1.PageRequest, accessToken string) (*vkv1.VkSearchResult, *sharedv1.PageResponse, error)
 }

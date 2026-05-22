@@ -21,3 +21,4 @@ skills-lock.json
 
 docker/dev
 scripts/dev
+docker/dev/certs/

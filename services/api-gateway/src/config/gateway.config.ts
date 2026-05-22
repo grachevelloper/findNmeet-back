@@ -1,5 +1,6 @@
 import {
   CompleteVkOAuthRequestSchema,
+  CompleteVkWebAuthRequestSchema,
   GetUserRequestSchema,
   RefreshSessionRequestSchema,
   RevokeSessionRequestSchema,
@@ -56,6 +57,16 @@ export function gatewayConfig(): GatewayConfig {
       auth: 'public',
       requestSource: 'body',
       requestSchema: CompleteVkOAuthRequestSchema,
+      writeSessionCookies: true,
+    },
+    {
+      method: 'POST',
+      path: '/auth/complete-vk-web-auth',
+      service: 'auth',
+      rpc: 'completeVkWebAuth',
+      auth: 'public',
+      requestSource: 'body',
+      requestSchema: CompleteVkWebAuthRequestSchema,
       writeSessionCookies: true,
     },
     {

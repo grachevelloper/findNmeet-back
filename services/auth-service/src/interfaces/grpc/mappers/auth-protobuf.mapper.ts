@@ -17,6 +17,7 @@ import {
 import type {
   AuthenticatedUser,
   CompleteVkOAuthRequest,
+  CompleteVkWebAuthRequest,
   CompleteVkOAuthResponse,
   GetExternalLinksRequest,
   GetExternalLinksResponse,

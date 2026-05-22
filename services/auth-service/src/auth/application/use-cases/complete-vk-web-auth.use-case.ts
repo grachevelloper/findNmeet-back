@@ -3,9 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { create } from '@bufbuild/protobuf';
 
 import { AuthResult } from '@findnmeet/ts-types/auth/v1';
-import { ExchangeOAuthCodeRequestSchema } from '@findnmeet/ts-types/vk/v1';
+import { GetCurrentProfileRequestSchema } from '@findnmeet/ts-types/vk/v1';
+import { SensitiveStringSchema } from '@findnmeet/ts-types/shared/v1';
 
-import type { CompleteVkOAuthCommand } from '../commands/complete-vk-oauth.command';
+import type { CompleteVkWebAuthCommand } from '../commands/complete-vk-web-auth.command';
 import type { CompleteVkOAuthResult } from '../dto/complete-vk-oauth.result';
 import { disabledUser, missingRequiredField } from '../errors/auth.errors';
 import { AuthUnitOfWork } from '../ports/auth-unit-of-work';
@@ -20,7 +21,7 @@ import { Provider } from '../../domain/models/provider';
 import { UserStatus } from '../../domain/models/user-status';
 
 @Injectable()
-export class CompleteVkOAuthUseCase {
+export class CompleteVkWebAuthUseCase {
   constructor(
     private readonly users: UserRepository,
     private readonly externalLinks: ExternalLinkRepository,
@@ -32,22 +33,23 @@ export class CompleteVkOAuthUseCase {
     private readonly vkOAuthProvider: VkOAuthProvider,
   ) {}
 
-  async execute(command: CompleteVkOAuthCommand): Promise<CompleteVkOAuthResult> {
-    if (!command.code) {
-      throw missingRequiredField('code');
+  async execute(command: CompleteVkWebAuthCommand): Promise<CompleteVkOAuthResult> {
+    if (!command.accessToken) {
+      throw missingRequiredField('access_token');
     }
-    if (!command.redirectUri) {
-      throw missingRequiredField('redirect_uri');
-    }
+    const accessToken = command.accessToken;
 
-    const vkResponse = await this.vkOAuthProvider.exchangeOAuthCode(create(ExchangeOAuthCodeRequestSchema, {
-      code: command.code,
-      redirectUri: command.redirectUri,
-      codeVerifier: command.codeVerifier ?? '',
+    const profileResponse = await this.vkOAuthProvider.getCurrentProfile(create(GetCurrentProfileRequestSchema, {
+      accessToken: create(SensitiveStringSchema, { value: accessToken }),
     }));
 
+    const profile = profileResponse.profile;
+    if (!profile?.vkUserId) {
+      throw missingRequiredField('vk_profile.vk_user_id');
+    }
+
     const now = new Date();
-    const externalId = vkResponse.externalId;
+    const externalId = String(profile.vkUserId);
     let result = AuthResult.AUTHENTICATED_EXISTING_USER;
 
     const user = await this.unitOfWork.runInTransaction(async () => {
@@ -72,7 +74,7 @@ export class CompleteVkOAuthUseCase {
           userId: user.id,
           provider: Provider.VK,
           externalId,
-          providerMeta: { screenName: vkResponse.profile?.screenName ?? '' },
+          providerMeta: { screenName: profile.screenName ?? '' },
           linkedAt: now,
           updatedAt: now,
         });
@@ -81,7 +83,7 @@ export class CompleteVkOAuthUseCase {
       } else {
         link = await this.externalLinks.save({
           ...link,
-          providerMeta: { screenName: vkResponse.profile?.screenName ?? '' },
+          providerMeta: { screenName: profile.screenName ?? '' },
           updatedAt: now,
         });
       }
@@ -97,14 +99,14 @@ export class CompleteVkOAuthUseCase {
       });
 
       const existingToken = await this.authTokens.findByExternalLinkId(link.id);
-      const expiresAt = new Date(now.getTime() + Number(vkResponse.tokens?.expiresIn?.seconds ?? 0) * 1000);
+      const expiresAt = new Date(now.getTime() + Math.max(0, command.expiresInSeconds ?? 0) * 1000);
 
       await this.authTokens.save({
         id: existingToken?.id ?? randomUUID(),
         externalLinkId: link.id,
-        accessToken: vkResponse.tokens?.accessToken?.value ?? '',
-        refreshToken: vkResponse.tokens?.refreshToken?.value ?? '',
-        deviceId: existingToken?.deviceId ?? null,
+        accessToken,
+        refreshToken: command.refreshToken ?? '',
+        deviceId: command.deviceId ?? null,
         encryptionKeyId: this.tokenCipher.keyId,
         expiresAt,
         createdAt: existingToken?.createdAt ?? now,
