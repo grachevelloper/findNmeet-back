@@ -1,6 +1,9 @@
-import { app } from './app';
+import 'reflect-metadata';
+import { bootstrapGrpcServer } from './bootstrap/grpc-server';
 
-const port = process.env.AI_SERVICE_PORT ?? 3004;
-app.listen(port, () => {
-  console.log(`ai-service running on port ${port}`);
-});
+async function bootstrap() {
+  await bootstrapGrpcServer();
+  console.log('favorites-service gRPC transport is listening');
+}
+
+bootstrap();

@@ -1,7 +1,6 @@
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
 import type { DataSourceOptions } from 'typeorm';
-import { getPostgresSynchronize, getPostgresUrl } from '@findnmeet/utils';
+import { getPostgresUrl } from '@findnmeet/utils';
 
 
 // export const favoritesDataSourceOptions: DataSourceOptions = {

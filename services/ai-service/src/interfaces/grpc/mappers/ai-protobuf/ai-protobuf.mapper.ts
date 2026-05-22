@@ -1,6 +1,9 @@
 import { create } from '@bufbuild/protobuf';
 import { timestampFromDate } from '@bufbuild/protobuf/wkt';
-import { ParseSearchQueryResponseSchema } from '@findnmeet/ts-types/ai/v1';
+import {
+  ParseSearchQueryResponseSchema,
+  ParseSearchQueryStatus,
+} from '@findnmeet/ts-types/ai/v1';
 import type {
   ParseSearchQueryRequest,
   ParseSearchQueryResponse,
@@ -16,13 +19,14 @@ import {
   VkSearchFiltersSchema,
 } from '@findnmeet/ts-types/vk/v1';
 
-import type { ParseSearchQuery } from '../../../search-query/application/contracts/ai.commands';
-import type { SearchCriteria } from '../../../search-query/domain/models/search-criteria';
+import type { ParseSearchQuery } from '../../../../search-query/application/contracts/ai.commands';
+import type { ParsedSearchQueryResult } from '../../../../search-query/application/contracts/parsed-search-query.result';
+import type { SearchCriteria } from '../../../../search-query/domain/models/search-criteria';
 import type {
   VkReference,
   VkSearchFilters,
-} from '../../../search-query/domain/models/vk-search-filters';
-import { VkRelationStatus as DomainVkRelationStatus } from '../../../search-query/domain/models/vk-search-filters';
+} from '../../../../search-query/domain/models/vk-search-filters';
+import { VkRelationStatus as DomainVkRelationStatus } from '../../../../search-query/domain/models/vk-search-filters';
 
 export function parseSearchQueryRequestFromProto(
   request: ParseSearchQueryRequest,
@@ -33,10 +37,12 @@ export function parseSearchQueryRequestFromProto(
 }
 
 export function parseSearchQueryResponseToProto(
-  criteria: SearchCriteria,
+  result: ParsedSearchQueryResult,
 ): ParseSearchQueryResponse {
   return create(ParseSearchQueryResponseSchema, {
-    criteria: searchCriteriaToProto(criteria),
+    criteria: searchCriteriaToProto(result.criteria),
+    status: parseSearchQueryStatusToProto(result.status),
+    message: result.message,
   });
 }
 
@@ -103,4 +109,15 @@ function vkRelationStatusToProto(
 
 function createUuid(value: string) {
   return value ? create(UuidSchema, { value }) : undefined;
+}
+
+function parseSearchQueryStatusToProto(status: ParsedSearchQueryResult['status']): ParseSearchQueryStatus {
+  switch (status) {
+    case 'PARSED':
+      return ParseSearchQueryStatus.PARSED;
+    case 'NEEDS_CLARIFICATION':
+      return ParseSearchQueryStatus.NEEDS_CLARIFICATION;
+    default:
+      return ParseSearchQueryStatus.UNSPECIFIED;
+  }
 }
