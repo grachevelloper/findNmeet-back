@@ -9,6 +9,8 @@ import "findnmeet/auth/v1/get_external_links_request.proto";
 import "findnmeet/auth/v1/get_external_links_response.proto";
 import "findnmeet/auth/v1/get_user_request.proto";
 import "findnmeet/auth/v1/get_user_response.proto";
+import "findnmeet/auth/v1/get_vk_access_token_request.proto";
+import "findnmeet/auth/v1/get_vk_access_token_response.proto";
 import "findnmeet/auth/v1/refresh_session_request.proto";
 import "findnmeet/auth/v1/refresh_session_response.proto";
 import "findnmeet/auth/v1/revoke_session_request.proto";
@@ -23,6 +25,8 @@ service AuthService {
       returns (GetUserResponse);
   rpc GetExternalLinks(GetExternalLinksRequest)
       returns (GetExternalLinksResponse);
+  rpc GetVkAccessToken(GetVkAccessTokenRequest)
+      returns (GetVkAccessTokenResponse);
   rpc RefreshSession(RefreshSessionRequest)
       returns (RefreshSessionResponse);
   rpc RevokeSession(RevokeSessionRequest)

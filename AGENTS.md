@@ -19,7 +19,6 @@ Important current auth docs:
 ├── services/
 │   ├── api-gateway/
 │   ├── auth-service/
-│   ├── search-orchestrator/
 │   ├── favorites-service/
 │   ├── ai-service/
 │   └── vk-gateway/
@@ -46,18 +45,16 @@ Important current auth docs:
 flowchart LR
     FE[Frontend] --> GW[api-gateway]
     GW --> AUTH[auth-service]
-    GW --> SEARCH[search-orchestrator]
     GW --> FAV[favorites-service]
     GW --> AI[ai-service]
     AUTH --> VKG[vk-gateway]
-    SEARCH --> VKG
     FAV --> VKG
+    AI --> VKG
     AUTH --> PG[(PostgreSQL)]
     FAV --> PG
-    SEARCH --> REDIS[(Redis)]
 ```
 
-The diagram reflects the intended service boundaries from the repository names, environment variables, and domain spec. In the current implementation, `auth-service` and `favorites-service` already own their domain logic behind gRPC transports, while `search-orchestrator`, `ai-service`, and `vk-gateway` are still comparatively thin.
+The diagram reflects the intended MVP service boundaries from the repository names, environment variables, and domain spec. In the current implementation, `auth-service` and `favorites-service` already own their domain logic behind gRPC transports, while `ai-service` and `vk-gateway` are still comparatively thin.
 
 ## Services
 
@@ -128,26 +125,6 @@ Current note:
 
 - local session refresh is implemented;
 - server-side VK credential refresh contract exists, but the actual VK refresh call is not implemented yet in `vk-gateway`.
-
-### `services/search-orchestrator`
-
-Express service intended to orchestrate search flows.
-
-Current files:
-
-- `src/app.ts` creates an Express app with JSON middleware and `GET /health`.
-- `src/index.ts` starts the server.
-- `src/app.spec.ts` tests the health response.
-
-Default port:
-
-- `SEARCH_ORCHESTRATOR_PORT=3002`
-
-Expected boundary:
-
-- Search request composition.
-- Calls to `vk-gateway` for VK people/profile data.
-- Possible Redis usage for caching or coordination.
 
 ### `services/favorites-service`
 
@@ -288,11 +265,11 @@ Important constraints:
 `docker-compose.yml` starts local infrastructure:
 
 - PostgreSQL 16 on `localhost:5432`
-- Redis 7 on `localhost:6379`
 
 `.env.example` defines:
 
 - `POSTGRES_URL`
+- VK OAuth settings
 - `REDIS_URL`
 - VK app and OAuth-related settings
 - `OPENAI_API_KEY`
@@ -320,7 +297,6 @@ Root scripts:
 
 - `pnpm dev:gateway`
 - `pnpm dev:auth`
-- `pnpm dev:search`
 - `pnpm dev:favorites`
 - `pnpm dev:ai`
 - `pnpm infra:up`
@@ -347,6 +323,15 @@ Implemented:
 - `api-gateway` as a running HTTP public edge with `/api/v1` prefix, cookie-based auth handling, and thin proxy routing.
 - `auth-service` gRPC flows with TypeORM-backed persistence, VK gateway integration, local session handling, and frontend-token-based VK Web auth completion.
 - `favorites-service` gRPC CRUD flows with TypeORM-backed persistence and domain logic.
+- AI-assisted search query parsing in `ai-service`.
+- Bootstrap-level VK integration in `vk-gateway`.
+- Shared packages for contracts and utilities.
+- Local PostgreSQL compose file.
+- Auth/favorites domain and API contract documentation.
+
+Planned or partially wired:
+
+- API Gateway as public HTTP entry point.
 - `vk-gateway` gRPC surface for OAuth code exchange, current-profile verification by VK access token, and explicit profile lookup.
 - Shared packages for contracts and utilities.
 - Local PostgreSQL and Redis compose file.
@@ -443,3 +428,17 @@ SmtpEmailSender реализует application.EmailSender.
 Плохо: orderController.Create(...) -> внутри лезет в БД и меняет статус заказа.
 
 Хорошо: orderController.Create(...) -> создает CreateOrderCommand -> вызывает application.OrderService.Create(cmd) -> а уже сервис работает с репозиторием и доменом.
+
+5. Правило организации файлов и тестов
+
+Не раскладывать сущности и тесты россыпью по папкам разных уровней без явной причины.
+
+Если появляется отдельная сущность или отдельный use case со своей ответственностью:
+
+- заводи под нее отдельную папку;
+- основной файл делай `index.ts` или переименовывай существующий файл в `index.ts`;
+- импортируй через папку, а не через длинные пути к файлам;
+- тест клади рядом с этой сущностью в той же папке;
+- transport-тесты держи рядом с transport-кодом, application-тесты рядом с application-кодом, domain-тесты рядом с domain-кодом.
+
+Не делать общие свалки вида `tests/*`, если тест можно положить рядом с кодом, который он проверяет.

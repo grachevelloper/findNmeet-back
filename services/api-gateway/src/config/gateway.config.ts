@@ -13,9 +13,10 @@ import {
   RefreshFavoriteRequestSchema,
   UpdateFavoriteRequestSchema,
 } from '@findnmeet/ts-types/favorites/v1';
+import { SearchPeopleRequestSchema } from '@findnmeet/ts-types/search/v1';
 
 type RouteAuthMode = 'public' | 'required';
-type RouteServiceName = 'auth' | 'favorites';
+type RouteServiceName = 'auth' | 'favorites' | 'search';
 type RequestSource = 'body' | 'query';
 type CookieSameSite = 'lax' | 'strict' | 'none';
 
@@ -41,6 +42,7 @@ export type GatewayConfig = {
   cookieSameSite: CookieSameSite;
   authServiceGrpcUrl: string;
   favoritesServiceGrpcUrl: string;
+  aiServiceGrpcUrl: string;
   publicEndpoints: string[];
   routes: GatewayRoute[];
 };
@@ -98,6 +100,16 @@ export function gatewayConfig(): GatewayConfig {
       requestSchema: RevokeSessionRequestSchema,
       readRefreshTokenFromCookie: true,
       clearSessionCookies: true,
+    },
+    {
+      method: 'POST',
+      path: '/search/search-people',
+      service: 'search',
+      rpc: 'searchPeople',
+      auth: 'required',
+      requestSource: 'body',
+      requestSchema: SearchPeopleRequestSchema,
+      injectUserId: true,
     },
     {
       method: 'POST',
@@ -168,6 +180,7 @@ export function gatewayConfig(): GatewayConfig {
     cookieSameSite: parseSameSite(process.env.API_GATEWAY_COOKIE_SAME_SITE),
     authServiceGrpcUrl: process.env.AUTH_SERVICE_GRPC_URL ?? '0.0.0.0:50051',
     favoritesServiceGrpcUrl: process.env.FAVORITES_SERVICE_GRPC_URL ?? '0.0.0.0:50053',
+    aiServiceGrpcUrl: process.env.AI_SERVICE_GRPC_URL ?? '0.0.0.0:50053',
     publicEndpoints: ['/health', ...routes.filter((route) => route.auth === 'public').map((route) => route.path)],
     routes,
   };

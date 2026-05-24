@@ -17,7 +17,7 @@ type VKClient interface {
 	ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error)
 	GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error)
 	GetProfile(ctx context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error)
-	RefreshOAuthTokens(ctx context.Context, refreshToken string, deviceID string) (*vkv1.VkOAuthTokens, error)
+	SearchProfiles(ctx context.Context, filters *vkv1.VkSearchFilters, page *sharedv1.PageRequest, accessToken string) (*vkv1.VkSearchResult, *sharedv1.PageResponse, error)
 }
 
 type Service struct {
@@ -65,26 +65,20 @@ func (s *Service) GetProfile(ctx context.Context, req *vkv1.GetProfileRequest) (
 	return &vkv1.GetProfileResponse{Profile: profile}, nil
 }
 
-func (s *Service) GetCurrentProfile(ctx context.Context, req *vkv1.GetCurrentProfileRequest) (*vkv1.GetCurrentProfileResponse, error) {
-	profile, err := s.client.GetCurrentProfile(ctx, sensitiveValue(req.GetAccessToken()))
+func (s *Service) SearchProfiles(ctx context.Context, req *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {
+	if req.GetFilters() == nil {
+		return nil, status.Error(codes.InvalidArgument, "filters is required")
+	}
+
+	result, page, err := s.client.SearchProfiles(ctx, req.GetFilters(), req.GetPage(), sensitiveValue(req.GetAccessToken()))
 	if err != nil {
 		return nil, grpcError(err)
 	}
 
-	return &vkv1.GetCurrentProfileResponse{Profile: profile}, nil
-}
-
-func (s *Service) RefreshOAuthTokens(ctx context.Context, req *vkv1.RefreshOAuthTokensRequest) (*vkv1.RefreshOAuthTokensResponse, error) {
-	tokens, err := s.client.RefreshOAuthTokens(ctx, sensitiveValue(req.GetRefreshToken()), strings.TrimSpace(req.GetDeviceId()))
-	if err != nil {
-		return nil, grpcError(err)
-	}
-
-	return &vkv1.RefreshOAuthTokensResponse{Tokens: tokens}, nil
-}
-
-func (s *Service) SearchProfiles(context.Context, *vkv1.SearchProfilesRequest) (*vkv1.SearchProfilesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "SearchProfiles is not implemented yet")
+	return &vkv1.SearchProfilesResponse{
+		Result: result,
+		Page:   page,
+	}, nil
 }
 
 func profileLookup(lookup *vkv1.VkProfileLookup) (string, error) {

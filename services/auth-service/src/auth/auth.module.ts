@@ -9,6 +9,7 @@ import { CompleteVkOAuthUseCase } from './application/use-cases/complete-vk-oaut
 import { CompleteVkWebAuthUseCase } from './application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from './application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from './application/use-cases/get-user.use-case';
+import { GetVkAccessTokenUseCase } from './application/use-cases/get-vk-access-token.use-case';
 import { RefreshSessionUseCase } from './application/use-cases/refresh-session.use-case';
 import { RevokeSessionUseCase } from './application/use-cases/revoke-session.use-case';
 import { AuthSessionRepository } from './domain/ports/auth-session.repository';
@@ -36,6 +37,7 @@ import { VkGatewayClient } from './infrastructure/vk/vk-gateway.client';
     CompleteVkWebAuthUseCase,
     GetUserUseCase,
     GetExternalLinksUseCase,
+    GetVkAccessTokenUseCase,
     RefreshSessionUseCase,
     RevokeSessionUseCase,
     TypeOrmManagerContext,
@@ -61,6 +63,7 @@ import { VkGatewayClient } from './infrastructure/vk/vk-gateway.client';
     CompleteVkWebAuthUseCase,
     GetUserUseCase,
     GetExternalLinksUseCase,
+    GetVkAccessTokenUseCase,
     RefreshSessionUseCase,
     RevokeSessionUseCase,
   ],

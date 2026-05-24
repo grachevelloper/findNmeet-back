@@ -8,6 +8,8 @@ import type {
   GetExternalLinksResponse,
   GetUserRequest,
   GetUserResponse,
+  GetVkAccessTokenRequest,
+  GetVkAccessTokenResponse,
   RefreshSessionRequest,
   RefreshSessionResponse,
   RevokeSessionRequest,
@@ -18,6 +20,7 @@ import { CompleteVkOAuthUseCase } from '../../../auth/application/use-cases/comp
 import { CompleteVkWebAuthUseCase } from '../../../auth/application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from '../../../auth/application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from '../../../auth/application/use-cases/get-user.use-case';
+import { GetVkAccessTokenUseCase } from '../../../auth/application/use-cases/get-vk-access-token.use-case';
 import { RefreshSessionUseCase } from '../../../auth/application/use-cases/refresh-session.use-case';
 import { RevokeSessionUseCase } from '../../../auth/application/use-cases/revoke-session.use-case';
 import {
@@ -27,6 +30,7 @@ import {
   getExternalLinksResponseToProto,
   getUserIdFromProto,
   getUserResponseToProto,
+  getVkAccessTokenResponseToProto,
   refreshSessionResponseToProto,
   refreshTokenFromProto,
   revokeSessionResponseToProto,
@@ -39,6 +43,7 @@ export class AuthGrpcController {
     private readonly completeVkWebAuthUseCase: CompleteVkWebAuthUseCase,
     private readonly getUserUseCase: GetUserUseCase,
     private readonly getExternalLinksUseCase: GetExternalLinksUseCase,
+    private readonly getVkAccessTokenUseCase: GetVkAccessTokenUseCase,
     private readonly refreshSessionUseCase: RefreshSessionUseCase,
     private readonly revokeSessionUseCase: RevokeSessionUseCase,
   ) {}
@@ -65,6 +70,12 @@ export class AuthGrpcController {
   async getExternalLinks(request: GetExternalLinksRequest): Promise<GetExternalLinksResponse> {
     const externalLinks = await this.getExternalLinksUseCase.execute({ userId: getUserIdFromProto(request) });
     return getExternalLinksResponseToProto(externalLinks);
+  }
+
+  @GrpcMethod('AuthService', 'GetVkAccessToken')
+  async getVkAccessToken(request: GetVkAccessTokenRequest): Promise<GetVkAccessTokenResponse> {
+    const result = await this.getVkAccessTokenUseCase.execute({ userId: getUserIdFromProto(request) });
+    return getVkAccessTokenResponseToProto(result.accessToken);
   }
 
   @GrpcMethod('AuthService', 'RefreshSession')

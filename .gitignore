@@ -18,4 +18,7 @@ services/vk-gateway/bin/
 skills-lock.json
 
 .pnpm-store
+
+docker/dev
+scripts/dev
 docker/dev/certs/

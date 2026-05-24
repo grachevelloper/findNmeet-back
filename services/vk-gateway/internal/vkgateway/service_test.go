@@ -20,12 +20,13 @@ type fakeVKClient struct {
 	exchangedVerifier    string
 	profileLookup        string
 	profileAccessToken   string
-	currentAccessToken   string
-	refreshToken         string
-	refreshDeviceID      string
+	searchAccessToken    string
+	searchPageSize       int32
+	searchPageToken      string
+	searchFilters        *vkv1.VkSearchFilters
 	exchangeErr          error
 	profileErr           error
-	refreshErr           error
+	searchErr            error
 }
 
 func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
@@ -53,27 +54,33 @@ func (f *fakeVKClient) GetProfile(_ context.Context, lookup string, accessToken 
 	return &vkv1.VkProfile{VkUserId: 123, FirstName: "Ivan", LastName: "Ivanov", ScreenName: "ivan"}, nil
 }
 
-func (f *fakeVKClient) GetCurrentProfile(_ context.Context, accessToken string) (*vkv1.VkProfile, error) {
-	f.currentAccessToken = accessToken
-	if f.profileErr != nil {
-		return nil, f.profileErr
+func (f *fakeVKClient) SearchProfiles(
+	_ context.Context,
+	filters *vkv1.VkSearchFilters,
+	page *sharedv1.PageRequest,
+	accessToken string,
+) (*vkv1.VkSearchResult, *sharedv1.PageResponse, error) {
+	f.searchFilters = filters
+	f.searchAccessToken = accessToken
+	if page != nil {
+		f.searchPageSize = page.GetPageSize()
+		f.searchPageToken = page.GetPageToken()
+	}
+	if f.searchErr != nil {
+		return nil, nil, f.searchErr
 	}
 
-	return &vkv1.VkProfile{VkUserId: 123, FirstName: "Ivan", LastName: "Ivanov", ScreenName: "ivan"}, nil
-}
-
-func (f *fakeVKClient) RefreshOAuthTokens(_ context.Context, refreshToken string, deviceID string) (*vkv1.VkOAuthTokens, error) {
-	f.refreshToken = refreshToken
-	f.refreshDeviceID = deviceID
-	if f.refreshErr != nil {
-		return nil, f.refreshErr
-	}
-
-	return &vkv1.VkOAuthTokens{
-		AccessToken:  &sharedv1.SensitiveString{Value: "fresh-access-token"},
-		RefreshToken: &sharedv1.SensitiveString{Value: "fresh-refresh-token"},
-		ExpiresIn:    durationpb.New(time.Hour),
-	}, nil
+	return &vkv1.VkSearchResult{
+			TotalCount: func() *int64 {
+				total := int64(1)
+				return &total
+			}(),
+			Profiles: []*vkv1.VkProfile{
+				{VkUserId: 321, FirstName: "Anna", LastName: "Ivanova", ScreenName: "anna"},
+			},
+		},
+		&sharedv1.PageResponse{NextPageToken: "20"},
+		nil
 }
 
 func TestExchangeOAuthCodeReturnsTokensAndProfile(t *testing.T) {
@@ -125,22 +132,36 @@ func TestGetProfileAcceptsVkUserIDLookup(t *testing.T) {
 	}
 }
 
-func TestGetCurrentProfileUsesSuppliedAccessToken(t *testing.T) {
+func TestSearchProfilesDelegatesFiltersAndPage(t *testing.T) {
 	client := &fakeVKClient{}
 	service := NewService(client)
 
-	response, err := service.GetCurrentProfile(context.Background(), &vkv1.GetCurrentProfileRequest{
+	response, err := service.SearchProfiles(context.Background(), &vkv1.SearchProfilesRequest{
+		Filters: &vkv1.VkSearchFilters{
+			Query:      "anna",
+			OnlineOnly: true,
+		},
+		Page:        &sharedv1.PageRequest{PageSize: 20, PageToken: "0"},
 		AccessToken: &sharedv1.SensitiveString{Value: "vk-access-token"},
 	})
 	if err != nil {
-		t.Fatalf("GetCurrentProfile returned error: %v", err)
+		t.Fatalf("SearchProfiles returned error: %v", err)
 	}
 
-	if client.currentAccessToken != "vk-access-token" {
-		t.Fatalf("expected current profile access token to be forwarded")
+	if client.searchAccessToken != "vk-access-token" {
+		t.Fatalf("expected search access token vk-access-token, got %q", client.searchAccessToken)
 	}
-	if response.GetProfile().GetVkUserId() != 123 {
-		t.Fatalf("expected vk user id 123, got %d", response.GetProfile().GetVkUserId())
+	if client.searchPageSize != 20 {
+		t.Fatalf("expected page size 20, got %d", client.searchPageSize)
+	}
+	if client.searchFilters.GetQuery() != "anna" {
+		t.Fatalf("expected query anna, got %q", client.searchFilters.GetQuery())
+	}
+	if response.GetResult().GetProfiles()[0].GetScreenName() != "anna" {
+		t.Fatalf("expected screen name anna, got %q", response.GetResult().GetProfiles()[0].GetScreenName())
+	}
+	if response.GetPage().GetNextPageToken() != "20" {
+		t.Fatalf("expected next page token 20, got %q", response.GetPage().GetNextPageToken())
 	}
 }
 

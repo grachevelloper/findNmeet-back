@@ -3,6 +3,7 @@ import {
   CompleteVkOAuthRequestSchema,
   CompleteVkWebAuthRequestSchema,
   GetUserRequestSchema,
+  GetVkAccessTokenRequestSchema,
   RefreshSessionRequestSchema,
   RevokeSessionRequestSchema,
 } from '@findnmeet/ts-types/auth/v1';
@@ -14,6 +15,7 @@ import { CompleteVkOAuthUseCase } from '../src/auth/application/use-cases/comple
 import { CompleteVkWebAuthUseCase } from '../src/auth/application/use-cases/complete-vk-web-auth.use-case';
 import { GetExternalLinksUseCase } from '../src/auth/application/use-cases/get-external-links.use-case';
 import { GetUserUseCase } from '../src/auth/application/use-cases/get-user.use-case';
+import { GetVkAccessTokenUseCase } from '../src/auth/application/use-cases/get-vk-access-token.use-case';
 import { RefreshSessionUseCase } from '../src/auth/application/use-cases/refresh-session.use-case';
 import { RevokeSessionUseCase } from '../src/auth/application/use-cases/revoke-session.use-case';
 import { UserStatus } from '../src/auth/domain/models/user-status';
@@ -25,6 +27,7 @@ describe('AuthGrpcController', () => {
   const completeVkWebAuthUseCase = { execute: jest.fn() };
   const getUserUseCase = { execute: jest.fn() };
   const getExternalLinksUseCase = { execute: jest.fn() };
+  const getVkAccessTokenUseCase = { execute: jest.fn() };
   const refreshSessionUseCase = { execute: jest.fn() };
   const revokeSessionUseCase = { execute: jest.fn() };
   const controller = new AuthGrpcController(
@@ -32,6 +35,7 @@ describe('AuthGrpcController', () => {
     completeVkWebAuthUseCase as unknown as CompleteVkWebAuthUseCase,
     getUserUseCase as unknown as GetUserUseCase,
     getExternalLinksUseCase as unknown as GetExternalLinksUseCase,
+    getVkAccessTokenUseCase as unknown as GetVkAccessTokenUseCase,
     refreshSessionUseCase as unknown as RefreshSessionUseCase,
     revokeSessionUseCase as unknown as RevokeSessionUseCase,
   );
@@ -178,5 +182,22 @@ describe('AuthGrpcController', () => {
     }));
 
     expect(getUserUseCase.execute).toHaveBeenCalledWith({ userId: '550e8400-e29b-41d4-a716-446655440000' });
+  });
+
+  it('returns vk access token by user id', async () => {
+    getVkAccessTokenUseCase.execute.mockResolvedValue({
+      accessToken: 'vk-user-access-token',
+    });
+
+    const response = await controller.getVkAccessToken(
+      create(GetVkAccessTokenRequestSchema, {
+        userId: create(UuidSchema, { value: '550e8400-e29b-41d4-a716-446655440000' }),
+      }),
+    );
+
+    expect(getVkAccessTokenUseCase.execute).toHaveBeenCalledWith({
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+    });
+    expect(response.accessToken?.value).toBe('vk-user-access-token');
   });
 });

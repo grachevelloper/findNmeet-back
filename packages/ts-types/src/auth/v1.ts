@@ -7,6 +7,8 @@ export * from '../../.gen/findnmeet/auth/v1/get_external_links_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_external_links_response_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_user_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/get_user_response_pb';
+export * from '../../.gen/findnmeet/auth/v1/get_vk_access_token_request_pb';
+export * from '../../.gen/findnmeet/auth/v1/get_vk_access_token_response_pb';
 export * from '../../.gen/findnmeet/auth/v1/refresh_session_request_pb';
 export * from '../../.gen/findnmeet/auth/v1/refresh_session_response_pb';
 export * from '../../.gen/findnmeet/auth/v1/revoke_session_request_pb';

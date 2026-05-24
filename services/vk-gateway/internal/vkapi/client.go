@@ -131,37 +131,93 @@ func (c *Client) GetProfile(ctx context.Context, lookup string, accessToken stri
 	return profileFromVK(payload.Response[0]), nil
 }
 
-func (c *Client) GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error) {
+func (c *Client) SearchProfiles(
+	ctx context.Context,
+	filters *vkv1.VkSearchFilters,
+	page *sharedv1.PageRequest,
+	accessToken string,
+) (*vkv1.VkSearchResult, *sharedv1.PageResponse, error) {
 	if accessToken == "" {
-		return nil, ErrUnauthorized
+		return nil, nil, ErrUnauthorized
 	}
 
-	endpoint, err := buildUsersGetURL(c.apiURL, c.apiVersion, accessToken, nil)
+	offset, err := searchOffset(page)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	count := searchCount(page)
+
+	endpoint, err := buildURL(c.apiURL, "/method/users.search", func(query url.Values) {
+		query.Set("q", strings.TrimSpace(filters.GetQuery()))
+		query.Set("count", strconv.Itoa(count))
+		query.Set("offset", strconv.Itoa(offset))
+		query.Set("fields", "screen_name,photo_200,city,country,home_town,education,graduation,bdate,online,last_seen,relation,can_write_private_message,is_closed")
+		query.Set("access_token", accessToken)
+		query.Set("v", c.apiVersion)
+		if filters.GetCity() != nil && filters.GetCity().GetId() > 0 {
+			query.Set("city", strconv.FormatInt(filters.GetCity().GetId(), 10))
+		}
+		if filters.GetCountry() != nil && filters.GetCountry().GetId() > 0 {
+			query.Set("country", strconv.FormatInt(filters.GetCountry().GetId(), 10))
+		}
+		if filters.GetUniversity() != nil && filters.GetUniversity().GetId() > 0 {
+			query.Set("university", strconv.FormatInt(filters.GetUniversity().GetId(), 10))
+		}
+		if filters.GetFaculty() != nil && filters.GetFaculty().GetId() > 0 {
+			query.Set("faculty", strconv.FormatInt(filters.GetFaculty().GetId(), 10))
+		}
+		if ageFrom := filters.GetAgeFrom(); ageFrom > 0 {
+			query.Set("age_from", strconv.FormatInt(int64(ageFrom), 10))
+		}
+		if ageTo := filters.GetAgeTo(); ageTo > 0 {
+			query.Set("age_to", strconv.FormatInt(int64(ageTo), 10))
+		}
+		if graduationYear := filters.GetGraduationYear(); graduationYear > 0 {
+			query.Set("university_year", strconv.FormatInt(int64(graduationYear), 10))
+		}
+		if relation := relationStatusParam(filters.GetRelation()); relation > 0 {
+			query.Set("status", strconv.Itoa(relation))
+		}
+		if filters.GetOnlineOnly() {
+			query.Set("online", "1")
+		}
+	})
+	if err != nil {
+		return nil, nil, err
 	}
 
 	req, err := newGetRequest(ctx, endpoint)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var payload usersGetResponse
+	var payload usersSearchResponse
 	if err := c.doJSON(req, &payload); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if payload.Error != nil {
-		return nil, vkAPIError(payload.Error)
-	}
-	if len(payload.Response) == 0 {
-		return nil, ErrNotFound
+		return nil, nil, vkAPIError(payload.Error)
 	}
 
-	return profileFromVK(payload.Response[0]), nil
-}
+	profiles := make([]*vkv1.VkProfile, 0, len(payload.Response.Items))
+	for _, user := range payload.Response.Items {
+		profiles = append(profiles, profileFromVK(user))
+	}
 
-func (c *Client) RefreshOAuthTokens(context.Context, string, string) (*vkv1.VkOAuthTokens, error) {
-	return nil, fmt.Errorf("vk oauth token refresh is not implemented yet")
+	nextPageToken := ""
+	if offset+count < payload.Response.Count {
+		nextPageToken = strconv.Itoa(offset + count)
+	}
+
+	return &vkv1.VkSearchResult{
+			TotalCount: func() *int64 {
+				total := int64(payload.Response.Count)
+				return &total
+			}(),
+			Profiles: profiles,
+		},
+		&sharedv1.PageResponse{NextPageToken: nextPageToken},
+		nil
 }
 
 func (c *Client) doJSON(req *http.Request, target any) error {
@@ -193,6 +249,14 @@ type oauthResponse struct {
 type usersGetResponse struct {
 	Response []vkUser `json:"response"`
 	Error    *vkError `json:"error"`
+}
+
+type usersSearchResponse struct {
+	Response struct {
+		Count int      `json:"count"`
+		Items []vkUser `json:"items"`
+	} `json:"response"`
+	Error *vkError `json:"error"`
 }
 
 type vkError struct {
@@ -350,5 +414,56 @@ func vkAPIError(err *vkError) error {
 		return fmt.Errorf("%w: vk api error %d", ErrNotFound, err.Code)
 	default:
 		return fmt.Errorf("vk api error %d: %s", err.Code, err.Message)
+	}
+}
+
+func searchOffset(page *sharedv1.PageRequest) (int, error) {
+	if page == nil || page.GetPageToken() == "" {
+		return 0, nil
+	}
+
+	offset, err := strconv.Atoi(page.GetPageToken())
+	if err != nil || offset < 0 {
+		return 0, fmt.Errorf("invalid page token")
+	}
+
+	return offset, nil
+}
+
+func searchCount(page *sharedv1.PageRequest) int {
+	if page == nil || page.GetPageSize() <= 0 {
+		return 20
+	}
+	if page.GetPageSize() > 1000 {
+		return 1000
+	}
+
+	return int(page.GetPageSize())
+}
+
+func relationStatusParam(status vkv1.VkRelationStatus) int {
+	switch status {
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_UNKNOWN:
+		return 1
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_NOT_SPECIFIED:
+		return 2
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_SINGLE:
+		return 1
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_RELATIONSHIP:
+		return 2
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_ENGAGED:
+		return 3
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_MARRIED:
+		return 4
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_COMPLICATED:
+		return 5
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_SEARCHING:
+		return 6
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_IN_LOVE:
+		return 7
+	case vkv1.VkRelationStatus_VK_RELATION_STATUS_CIVIL_UNION:
+		return 8
+	default:
+		return 0
 	}
 }

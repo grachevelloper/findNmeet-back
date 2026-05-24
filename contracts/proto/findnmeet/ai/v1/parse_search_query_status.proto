@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package findnmeet.ai.v1;
+
+enum ParseSearchQueryStatus {
+  PARSE_SEARCH_QUERY_STATUS_UNSPECIFIED = 0;
+  PARSE_SEARCH_QUERY_STATUS_PARSED = 1;
+  PARSE_SEARCH_QUERY_STATUS_NEEDS_CLARIFICATION = 2;
+}
