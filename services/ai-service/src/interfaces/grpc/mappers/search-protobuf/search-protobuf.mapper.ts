@@ -59,11 +59,19 @@ function profileToProto(profile: SearchPeopleResultProfile) {
     bdateRaw: profile.bdateRaw,
     age: profile.age,
     onlineStatus: onlineStatusToProto(profile.onlineStatus),
-    lastSeenAt: profile.lastSeenAt ? timestampFromDate(profile.lastSeenAt) : undefined,
+    lastSeenAt: validTimestampFromDate(profile.lastSeenAt),
     relation: relationToProto(profile.relation),
     visibility: visibilityToProto(profile.visibility),
     privateMessageStatus: privateMessageStatusToProto(profile.privateMessageStatus),
   });
+}
+
+function validTimestampFromDate(date?: Date) {
+  if (!date || Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+
+  return timestampFromDate(date);
 }
 
 function referenceToProto(reference: { id: bigint; title: string }) {

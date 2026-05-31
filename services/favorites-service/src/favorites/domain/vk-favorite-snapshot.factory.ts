@@ -1,8 +1,12 @@
-import type { VkFavoriteSnapshot } from './models/favorite';
+import type { VkFavoriteSnapshot, VkProfileSnapshot } from './models/favorite';
 
-export function createVkFavoriteSnapshot(externalId: string, now: Date): VkFavoriteSnapshot {
+export function createVkFavoriteSnapshot(
+  externalId: string,
+  now: Date,
+  profile?: VkProfileSnapshot,
+): VkFavoriteSnapshot {
   return {
-    profile: {
+    profile: profile ?? {
       vkUserId: externalId,
       firstName: 'VK',
       lastName: `User ${externalId}`,

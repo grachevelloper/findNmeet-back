@@ -51,6 +51,16 @@ export function completeVkOAuthCommandFromProto(request: CompleteVkOAuthRequest)
     state: request.state,
     redirectUri: request.redirectUri,
     codeVerifier: request.codeVerifier,
+    deviceId: request.deviceId,
+  };
+}
+
+export function completeVkWebAuthCommandFromProto(request: CompleteVkWebAuthRequest) {
+  return {
+    accessToken: request.accessToken?.value,
+    refreshToken: request.refreshToken?.value,
+    expiresInSeconds: request.expiresInSeconds ? Number(request.expiresInSeconds) : undefined,
+    deviceId: request.deviceId,
   };
 }
 

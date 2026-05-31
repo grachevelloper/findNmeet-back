@@ -44,6 +44,8 @@ export class CompleteVkOAuthUseCase {
       code: command.code,
       redirectUri: command.redirectUri,
       codeVerifier: command.codeVerifier ?? '',
+      state: command.state ?? '',
+      deviceId: command.deviceId ?? '',
     }));
 
     const now = new Date();

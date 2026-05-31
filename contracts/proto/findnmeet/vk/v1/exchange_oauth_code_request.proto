@@ -8,4 +8,6 @@ message ExchangeOAuthCodeRequest {
   string  code = 1;
   string  redirect_uri = 2;
   string  code_verifier = 3;
+  string  state = 4;
+  string  device_id = 5;
 }

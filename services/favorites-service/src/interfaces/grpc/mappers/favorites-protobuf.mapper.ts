@@ -42,7 +42,7 @@ import type {
   UpdateFavoriteCommand,
 } from '../../../favorites/application/contracts/favorites.commands';
 import type { ListFavoritesResult } from '../../../favorites/application/contracts/favorites.results';
-import type { Favorite, VkFavoriteSnapshot } from '../../../favorites/domain/models/favorite';
+import type { Favorite, VkFavoriteSnapshot, VkProfileSnapshot } from '../../../favorites/domain/models/favorite';
 import { FavoriteProvider } from '../../../favorites/domain/models/favorite-provider';
 
 export function createFavoriteCommandFromProto(request: CreateFavoriteRequest): CreateFavoriteCommand {
@@ -50,6 +50,7 @@ export function createFavoriteCommandFromProto(request: CreateFavoriteRequest): 
     provider: favoriteProviderFromProto(request.provider),
     externalId: request.externalId,
     note: request.note,
+    vkProfile: request.vkProfile ? vkProfileSnapshotFromProto(request.vkProfile, request.externalId) : undefined,
   };
 }
 
@@ -140,6 +141,19 @@ function vkFavoriteSnapshotToProto(snapshot: VkFavoriteSnapshot, fallbackExterna
     }),
     snapshotUpdatedAt: timestampFromDate(snapshot.snapshotUpdatedAt),
   });
+}
+
+function vkProfileSnapshotFromProto(
+  profile: import('@findnmeet/ts-types/vk/v1').VkProfile,
+  fallbackExternalId: string,
+): VkProfileSnapshot {
+  return {
+    vkUserId: profile.vkUserId ? profile.vkUserId.toString() : fallbackExternalId,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    screenName: profile.screenName,
+    photoUrl: profile.photoUrl,
+  };
 }
 
 function favoriteProviderFromProto(provider: Provider): FavoriteProvider | undefined {

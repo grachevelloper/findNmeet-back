@@ -40,7 +40,7 @@ import { ProxyService } from './proxy.service';
         }),
       },
       {
-        name: 'SEARCH_GRPC_CLIENT',
+        name: 'AI_GRPC_CLIENT',
         useFactory: () => ({
           transport: Transport.GRPC,
           options: {

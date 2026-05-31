@@ -86,6 +86,7 @@ describe('AuthGrpcController', () => {
       state: 'state',
       redirectUri: 'http://localhost:3000/auth/vk/callback',
       codeVerifier: 'pkce-verifier',
+      deviceId: '',
     });
     expect(response.result).toBe(AuthResult.CREATED_USER);
     expect(response.user?.user?.id?.value).toBe('550e8400-e29b-41d4-a716-446655440000');

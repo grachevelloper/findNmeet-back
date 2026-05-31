@@ -171,6 +171,16 @@ export function gatewayConfig(): GatewayConfig {
       requestSchema: RefreshFavoriteRequestSchema,
       metadataUserId: true,
     },
+    {
+      method: 'POST',
+      path: '/search/search-people',
+      service: 'search',
+      rpc: 'searchPeople',
+      auth: 'required',
+      requestSource: 'body',
+      requestSchema: SearchPeopleRequestSchema,
+      injectUserId: true,
+    },
   ];
 
   return {
@@ -180,7 +190,7 @@ export function gatewayConfig(): GatewayConfig {
     cookieSameSite: parseSameSite(process.env.API_GATEWAY_COOKIE_SAME_SITE),
     authServiceGrpcUrl: process.env.AUTH_SERVICE_GRPC_URL ?? '0.0.0.0:50051',
     favoritesServiceGrpcUrl: process.env.FAVORITES_SERVICE_GRPC_URL ?? '0.0.0.0:50053',
-    aiServiceGrpcUrl: process.env.AI_SERVICE_GRPC_URL ?? '0.0.0.0:50053',
+    aiServiceGrpcUrl: process.env.AI_SERVICE_GRPC_URL ?? 'ai-service:50052',
     publicEndpoints: ['/health', ...routes.filter((route) => route.auth === 'public').map((route) => route.path)],
     routes,
   };

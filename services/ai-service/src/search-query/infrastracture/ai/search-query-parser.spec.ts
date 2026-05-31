@@ -33,6 +33,26 @@ describe('SearchQueryParser', () => {
     });
   });
 
+  it('accepts optional proxy configuration', async () => {
+    (generateObject as jest.Mock).mockResolvedValue({
+      object: {
+        query: 'ищу девушку из мгу',
+        relation: 'VK_RELATION_STATUS_UNSPECIFIED',
+        onlineOnly: false,
+      },
+    });
+
+    const parser = new SearchQueryParser({
+      apiKey: 'key',
+      model: 'gemini-2.0-flash',
+      proxyUrl: 'http://proxy.example:8080',
+    });
+
+    await expect(parser.parse('user-1', 'Ищу девушку')).resolves.toMatchObject({
+      query: 'ищу девушку из мгу',
+    });
+  });
+
   it('throws when AI output is invalid', async () => {
     (generateObject as jest.Mock).mockResolvedValue({
       object: { relation: 'BROKEN' },

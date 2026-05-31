@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Metadata, status } from '@grpc/grpc-js';
 import { FieldMaskSchema } from '@bufbuild/protobuf/wkt';
 import {
+  CreateFavoriteRequestSchema,
   DeleteFavoriteRequestSchema,
   FavoritePatchSchema,
   GetFavoriteRequestSchema,
@@ -11,6 +12,7 @@ import {
   UpdateFavoriteRequestSchema,
 } from '@findnmeet/ts-types/favorites/v1';
 import { PageRequestSchema, Provider, UuidSchema } from '@findnmeet/ts-types/shared/v1';
+import { VkProfileSchema } from '@findnmeet/ts-types/vk/v1';
 
 import { CreateFavoriteUseCase } from '../../../favorites/application/use-cases/create-favorite';
 import { DeleteFavoriteUseCase } from '../../../favorites/application/use-cases/delete-favorite';
@@ -56,6 +58,38 @@ describe('FavoritesGrpcController', () => {
     });
     expect(res.favorite?.id?.value).toEqual(expect.any(String));
     expect(res.favorite?.providerDetails.value?.profile?.vkUserId).toBe(BigInt('123456789'));
+  });
+
+  it('creates VK favorite with profile snapshot from search result', async () => {
+    const res = await controller.createFavorite(
+      create(CreateFavoriteRequestSchema, {
+        provider: Provider.VK,
+        externalId: '10003',
+        note: 'Красивая!',
+        vkProfile: create(VkProfileSchema, {
+          vkUserId: 10003n,
+          firstName: 'Анна',
+          lastName: 'Новикова',
+          screenName: 'anna_msk_demo_03',
+          photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80',
+        }),
+      }),
+      metadataWithUserId(),
+    );
+
+    expect(res.favorite).toMatchObject({
+      externalId: '10003',
+      displayTitle: 'Анна Новикова',
+      displayImageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80',
+      note: 'Красивая!',
+    });
+    expect(res.favorite?.providerDetails.value?.profile).toMatchObject({
+      vkUserId: 10003n,
+      firstName: 'Анна',
+      lastName: 'Новикова',
+      screenName: 'anna_msk_demo_03',
+      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80',
+    });
   });
 
   it('lists, updates, refreshes and deletes favorites owned by current user', async () => {
@@ -122,6 +156,32 @@ describe('FavoritesGrpcController', () => {
 
     await expect(controller.createFavorite(createFavoriteRequest('100'), metadataWithUserId())).rejects.toMatchObject({
       status: 409,
+    });
+  });
+
+  it('rejects non numeric VK external id', async () => {
+    await expect(
+      controller.createFavorite(createFavoriteRequest('[object Object]'), metadataWithUserId()),
+    ).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+
+  it('rejects VK profile snapshot with mismatched user id', async () => {
+    await expect(
+      controller.createFavorite(
+        create(CreateFavoriteRequestSchema, {
+          provider: Provider.VK,
+          externalId: '10003',
+          vkProfile: create(VkProfileSchema, {
+            vkUserId: 10004n,
+            firstName: 'Анна',
+          }),
+        }),
+        metadataWithUserId(),
+      ),
+    ).rejects.toMatchObject({
+      status: 400,
     });
   });
 

@@ -38,4 +38,22 @@ describe('ParseSearchQueryUseCase', () => {
     expect(result.criteria.rawQuery).toBe('Ищу девушку из МГУ');
     expect(result.criteria.vkFilters.university?.title).toBe('МГУ');
   });
+
+  it('falls back to raw query filters when parser is unavailable', async () => {
+    const parser = {
+      parse: jest.fn().mockRejectedValue(new Error('network failed')),
+    };
+    const useCase = new ParseSearchQueryUseCase(parser as never);
+
+    const result = await useCase.execute('user-1', { query: 'Парень из Тулы' });
+
+    expect(parser.parse).toHaveBeenCalledWith('user-1', 'Парень из Тулы');
+    expect(result.status).toBe('PARSED');
+    expect(result.criteria.rawQuery).toBe('Парень из Тулы');
+    expect(result.criteria.vkFilters).toEqual({
+      query: 'Парень из Тулы',
+      relation: VkRelationStatus.VK_RELATION_STATUS_UNSPECIFIED,
+      onlineOnly: false,
+    });
+  });
 });

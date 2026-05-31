@@ -1,4 +1,5 @@
 import type { Favorite } from './models/favorite';
+import type { VkProfileSnapshot } from './models/favorite';
 import type { FavoriteProvider } from './models/favorite-provider';
 import { createVkFavoriteSnapshot } from './vk-favorite-snapshot.factory';
 
@@ -10,8 +11,9 @@ export function createFavorite(input: {
   note: string;
   now: Date;
   addedAt?: Date;
+  vkProfile?: VkProfileSnapshot;
 }): Favorite {
-  const snapshot = createVkFavoriteSnapshot(input.externalId, input.now);
+  const snapshot = createVkFavoriteSnapshot(input.externalId, input.now, input.vkProfile);
   const profile = snapshot.profile;
   const displayTitle = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
 

@@ -3,4 +3,5 @@ export type CompleteVkOAuthCommand = {
   state?: string;
   redirectUri?: string;
   codeVerifier?: string;
+  deviceId?: string;
 };

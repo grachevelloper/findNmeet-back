@@ -57,4 +57,29 @@ describe('search-protobuf.mapper', () => {
       '2026-05-22T10:00:00.000Z',
     );
   });
+
+  it('skips invalid last seen dates instead of throwing', () => {
+    const response = searchPeopleResponseToProto({
+      aiCriteriaId: 'criteria-1',
+      aiStatus: 'ENRICHED',
+      totalCount: 1,
+      nextPageToken: '',
+      profiles: [
+        {
+          vkUserId: 7,
+          firstName: 'Anna',
+          lastName: 'Ivanova',
+          screenName: 'anna',
+          photoUrl: 'https://example.com/a.jpg',
+          onlineStatus: 'ONLINE',
+          relation: 'SINGLE',
+          visibility: 'OPEN',
+          privateMessageStatus: 'ALLOWED',
+          lastSeenAt: new Date(Number.NaN),
+        },
+      ],
+    });
+
+    expect(response.result?.profiles[0].lastSeenAt).toBeUndefined();
+  });
 });

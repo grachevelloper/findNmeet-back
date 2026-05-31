@@ -8,11 +8,6 @@ services:
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_dev_data:/data
-
   workspace-bootstrap:
     image: node:20-alpine
     working_dir: /workspace
@@ -47,8 +42,6 @@ services:
     depends_on:
       postgres:
         condition: service_started
-      redis:
-        condition: service_started
       workspace-bootstrap:
         condition: service_completed_successfully
 
@@ -70,7 +63,36 @@ services:
     depends_on:
       auth-service:
         condition: service_started
+      ai-service:
+        condition: service_started
       favorites-service:
+        condition: service_started
+      workspace-bootstrap:
+        condition: service_completed_successfully
+
+  ai-service:
+    image: node:20-alpine
+    working_dir: /workspace
+    env_file:
+      - .env.dev
+    environment:
+      NODE_ENV: development
+      AI_SERVICE_GRPC_URL: 0.0.0.0:50052
+      AI_MODEL: ${AI_MODEL:-gemini-2.0-flash}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_PROXY_URL: ${AI_PROXY_URL:-}
+    command: >
+      sh -lc "corepack enable &&
+      corepack prepare pnpm@9.15.9 --activate &&
+      pnpm --filter ai-service exec ts-node-dev --respawn --transpile-only src/index.ts"
+    volumes:
+      - .:/workspace
+      - workspace_node_modules:/workspace/node_modules
+      - backend_pnpm_store:/root/.local/share/pnpm/store
+    depends_on:
+      auth-service:
+        condition: service_started
+      vk-gateway:
         condition: service_started
       workspace-bootstrap:
         condition: service_completed_successfully
@@ -105,8 +127,6 @@ services:
     depends_on:
       postgres:
         condition: service_started
-      redis:
-        condition: service_started
       vk-gateway:
         condition: service_started
       workspace-bootstrap:
@@ -129,7 +149,6 @@ services:
 
 volumes:
   postgres_dev_data:
-  redis_dev_data:
   workspace_node_modules:
   backend_pnpm_store:
   go_pkg_mod:

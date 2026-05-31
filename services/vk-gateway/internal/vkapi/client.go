@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -57,25 +58,32 @@ func NewClient(cfg Config) *Client {
 	}
 }
 
-func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
-	if c.appID == "" || c.appSecret == "" {
-		return "", nil, fmt.Errorf("%w: VK_APP_ID and VK_APP_SECRET are required", ErrInvalidConfig)
+func (c *Client) ExchangeOAuthCode(ctx context.Context, code string, redirectURI string, codeVerifier string, state string, deviceID string) (string, *vkv1.VkOAuthTokens, error) {
+	if c.appID == "" {
+		return "", nil, fmt.Errorf("%w: VK_APP_ID is required", ErrInvalidConfig)
 	}
 
-	endpoint, err := buildURL(c.oauthURL, "/access_token", func(query url.Values) {
+	endpoint, err := buildURL(c.oauthURL, "/oauth2/auth", func(query url.Values) {
+		query.Set("grant_type", "authorization_code")
 		query.Set("client_id", c.appID)
-		query.Set("client_secret", c.appSecret)
 		query.Set("redirect_uri", redirectURI)
-		query.Set("code", code)
 		if codeVerifier != "" {
 			query.Set("code_verifier", codeVerifier)
+		}
+		if state != "" {
+			query.Set("state", state)
+		}
+		if deviceID != "" {
+			query.Set("device_id", deviceID)
 		}
 	})
 	if err != nil {
 		return "", nil, err
 	}
 
-	req, err := newGetRequest(ctx, endpoint)
+	req, err := newPostFormRequest(ctx, endpoint, url.Values{
+		"code": []string{code},
+	})
 	if err != nil {
 		return "", nil, err
 	}
@@ -108,6 +116,35 @@ func (c *Client) GetProfile(ctx context.Context, lookup string, accessToken stri
 	endpoint, err := buildUsersGetURL(c.apiURL, c.apiVersion, accessToken, func(query url.Values) {
 		query.Set("user_ids", lookup)
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := newGetRequest(ctx, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload usersGetResponse
+	if err := c.doJSON(req, &payload); err != nil {
+		return nil, err
+	}
+	if payload.Error != nil {
+		return nil, vkAPIError(payload.Error)
+	}
+	if len(payload.Response) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return profileFromVK(payload.Response[0]), nil
+}
+
+func (c *Client) GetCurrentProfile(ctx context.Context, accessToken string) (*vkv1.VkProfile, error) {
+	if accessToken == "" {
+		return nil, ErrUnauthorized
+	}
+
+	endpoint, err := buildUsersGetURL(c.apiURL, c.apiVersion, accessToken, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -227,14 +264,23 @@ func (c *Client) doJSON(req *http.Request, target any) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return ErrUnauthorized
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("vk http status %d", resp.StatusCode)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
 	}
 
-	return json.NewDecoder(resp.Body).Decode(target)
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		return fmt.Errorf("%w: http status %d body: %s", ErrUnauthorized, resp.StatusCode, truncateBody(body))
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("vk http status %d body: %s", resp.StatusCode, truncateBody(body))
+	}
+
+	if err := json.Unmarshal(body, target); err != nil {
+		return fmt.Errorf("vk decode response: %w", err)
+	}
+
+	return nil
 }
 
 type oauthResponse struct {
@@ -398,12 +444,26 @@ func relationStatus(value int32) vkv1.VkRelationStatus {
 
 func vkOAuthError(code string, description string) error {
 	if code == "invalid_grant" || code == "invalid_client" {
+		if description != "" {
+			return fmt.Errorf("%w: %s (%s)", ErrUnauthorized, code, description)
+		}
 		return fmt.Errorf("%w: %s", ErrUnauthorized, code)
 	}
 	if description != "" {
 		return fmt.Errorf("vk oauth error: %s", description)
 	}
 	return fmt.Errorf("vk oauth error: %s", code)
+}
+
+func truncateBody(body []byte) string {
+	trimmed := strings.TrimSpace(string(body))
+	if trimmed == "" {
+		return "<empty>"
+	}
+	if len(trimmed) > 300 {
+		return trimmed[:300] + "..."
+	}
+	return trimmed
 }
 
 func vkAPIError(err *vkError) error {

@@ -3,6 +3,7 @@ package vkgateway
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,6 +19,9 @@ type fakeVKClient struct {
 	exchangedCode        string
 	exchangedRedirectURI string
 	exchangedVerifier    string
+	exchangedState       string
+	exchangedDeviceID    string
+	currentProfileToken  string
 	profileLookup        string
 	profileAccessToken   string
 	searchAccessToken    string
@@ -29,10 +33,12 @@ type fakeVKClient struct {
 	searchErr            error
 }
 
-func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string, codeVerifier string) (string, *vkv1.VkOAuthTokens, error) {
+func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirectURI string, codeVerifier string, state string, deviceID string) (string, *vkv1.VkOAuthTokens, error) {
 	f.exchangedCode = code
 	f.exchangedRedirectURI = redirectURI
 	f.exchangedVerifier = codeVerifier
+	f.exchangedState = state
+	f.exchangedDeviceID = deviceID
 	if f.exchangeErr != nil {
 		return "", nil, f.exchangeErr
 	}
@@ -42,6 +48,15 @@ func (f *fakeVKClient) ExchangeOAuthCode(_ context.Context, code string, redirec
 		RefreshToken: &sharedv1.SensitiveString{Value: "vk-refresh-token"},
 		ExpiresIn:    durationpb.New(time.Hour),
 	}, nil
+}
+
+func (f *fakeVKClient) GetCurrentProfile(_ context.Context, accessToken string) (*vkv1.VkProfile, error) {
+	f.currentProfileToken = accessToken
+	if f.profileErr != nil {
+		return nil, f.profileErr
+	}
+
+	return &vkv1.VkProfile{VkUserId: 456, FirstName: "Sasha", LastName: "Petrov", ScreenName: "sasha"}, nil
 }
 
 func (f *fakeVKClient) GetProfile(_ context.Context, lookup string, accessToken string) (*vkv1.VkProfile, error) {
@@ -90,6 +105,8 @@ func TestExchangeOAuthCodeReturnsTokensAndProfile(t *testing.T) {
 	response, err := service.ExchangeOAuthCode(context.Background(), &vkv1.ExchangeOAuthCodeRequest{
 		Code:        "oauth-code",
 		RedirectUri: "http://localhost:3000/auth/vk/callback",
+		State:       "oauth-state",
+		DeviceId:    "device-1",
 	})
 	if err != nil {
 		t.Fatalf("ExchangeOAuthCode returned error: %v", err)
@@ -100,6 +117,12 @@ func TestExchangeOAuthCodeReturnsTokensAndProfile(t *testing.T) {
 	}
 	if client.profileLookup != "123" {
 		t.Fatalf("expected profile lookup 123, got %q", client.profileLookup)
+	}
+	if client.exchangedDeviceID != "device-1" {
+		t.Fatalf("expected device id device-1, got %q", client.exchangedDeviceID)
+	}
+	if client.exchangedState != "oauth-state" {
+		t.Fatalf("expected state oauth-state, got %q", client.exchangedState)
 	}
 	if client.profileAccessToken != "vk-access-token" {
 		t.Fatalf("expected profile access token to come from token exchange")
@@ -129,6 +152,25 @@ func TestGetProfileAcceptsVkUserIDLookup(t *testing.T) {
 	}
 	if response.GetProfile().GetScreenName() != "ivan" {
 		t.Fatalf("expected screen name ivan, got %q", response.GetProfile().GetScreenName())
+	}
+}
+
+func TestGetCurrentProfileUsesAccessToken(t *testing.T) {
+	client := &fakeVKClient{}
+	service := NewService(client)
+
+	response, err := service.GetCurrentProfile(context.Background(), &vkv1.GetCurrentProfileRequest{
+		AccessToken: &sharedv1.SensitiveString{Value: "vk-access-token"},
+	})
+	if err != nil {
+		t.Fatalf("GetCurrentProfile returned error: %v", err)
+	}
+
+	if client.currentProfileToken != "vk-access-token" {
+		t.Fatalf("expected current profile token vk-access-token, got %q", client.currentProfileToken)
+	}
+	if response.GetProfile().GetScreenName() != "sasha" {
+		t.Fatalf("expected screen name sasha, got %q", response.GetProfile().GetScreenName())
 	}
 }
 
@@ -162,6 +204,27 @@ func TestSearchProfilesDelegatesFiltersAndPage(t *testing.T) {
 	}
 	if response.GetPage().GetNextPageToken() != "20" {
 		t.Fatalf("expected next page token 20, got %q", response.GetPage().GetNextPageToken())
+	}
+}
+
+func TestSearchProfilesIncludesUsersGetDiagnosticOnFailure(t *testing.T) {
+	client := &fakeVKClient{searchErr: errors.New("vk api error 1051")}
+	service := NewService(client)
+
+	_, err := service.SearchProfiles(context.Background(), &vkv1.SearchProfilesRequest{
+		Filters:      &vkv1.VkSearchFilters{Query: "anna"},
+		AccessToken:  &sharedv1.SensitiveString{Value: "vk-access-token"},
+	})
+	if status.Code(err) != codes.Unavailable {
+		t.Fatalf("expected Unavailable, got %v", status.Code(err))
+	}
+
+	message := status.Convert(err).Message()
+	if !strings.Contains(message, "users.search failed: vk api error 1051") {
+		t.Fatalf("expected search failure details, got %q", message)
+	}
+	if !strings.Contains(message, "users.get self-check ok: vk_user_id=456 screen_name=sasha") {
+		t.Fatalf("expected users.get diagnostic, got %q", message)
 	}
 }
 

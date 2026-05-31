@@ -54,6 +54,41 @@ func TestSearchProfilesBuildsVKQueryAndPagination(t *testing.T) {
 	}
 }
 
+func TestGetCurrentProfileUsesUsersGetWithoutLookup(t *testing.T) {
+	var gotQuery map[string]string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = map[string]string{}
+		for key := range r.URL.Query() {
+			gotQuery[key] = r.URL.Query().Get(key)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"response":[{"id":8,"first_name":"Sasha","last_name":"Petrov","screen_name":"sasha"}]}`))
+	}))
+	defer server.Close()
+
+	client := NewClient(Config{
+		APIURL:     server.URL,
+		APIVersion: "5.199",
+		Timeout:    0,
+	})
+
+	profile, err := client.GetCurrentProfile(context.Background(), "vk-token")
+	if err != nil {
+		t.Fatalf("GetCurrentProfile returned error: %v", err)
+	}
+
+	if gotQuery["user_ids"] != "" {
+		t.Fatalf("expected user_ids to be omitted, got %#v", gotQuery)
+	}
+	if gotQuery["access_token"] != "vk-token" {
+		t.Fatalf("expected vk-token access token, got %#v", gotQuery)
+	}
+	if profile.GetScreenName() != "sasha" {
+		t.Fatalf("expected profile sasha, got %q", profile.GetScreenName())
+	}
+}
+
 func TestSearchProfilesRejectsInvalidPageToken(t *testing.T) {
 	client := NewClient(Config{
 		APIURL:     "https://example.invalid",

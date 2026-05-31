@@ -98,23 +98,6 @@ export class CompleteVkWebAuthUseCase {
         updatedAt: now,
       });
 
-      const existingToken = await this.authTokens.findByExternalLinkId(link.id);
-      const expiresAt = new Date(now.getTime() + Math.max(0, command.expiresInSeconds ?? 0) * 1000);
-
-      await this.authTokens.save({
-        id: existingToken?.id ?? randomUUID(),
-        externalLinkId: link.id,
-        accessToken,
-        refreshToken: command.refreshToken ?? '',
-        deviceId: command.deviceId ?? null,
-        encryptionKeyId: this.tokenCipher.keyId,
-        expiresAt,
-        createdAt: existingToken?.createdAt ?? now,
-        updatedAt: now,
-        lastUsedAt: now,
-        revokedAt: null,
-      });
-
       return user;
     });
 

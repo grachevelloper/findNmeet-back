@@ -5,6 +5,7 @@ import { OptionalAuthGuard } from '../auth/optional-auth.guard';
 import type { AuthenticatedRequest } from '../auth/request-auth-context';
 import { gatewayConfig, type GatewayRoute } from '../config/gateway.config';
 import { ProxyService } from './proxy.service';
+import { sanitizeProxyResult } from './sanitize-proxy-result';
 
 @Controller()
 @UseGuards(OptionalAuthGuard)
@@ -115,25 +116,6 @@ function extractSession(result: unknown): SessionLike | undefined {
     accessToken: readSensitiveString(session.accessToken),
     refreshToken: readSensitiveString(session.refreshToken),
     expiresAt: expiresAtSeconds ? new Date(expiresAtSeconds * 1000) : undefined,
-  };
-}
-
-function sanitizeProxyResult(route: GatewayRoute, result: unknown): unknown {
-  if (!route.writeSessionCookies || !result || typeof result !== 'object' || !('session' in result)) {
-    return result;
-  }
-
-  const response = result as Record<string, unknown>;
-  const session = response.session;
-  if (!session || typeof session !== 'object') {
-    return result;
-  }
-
-  return {
-    ...response,
-    session: {
-      expiresAt: (session as Record<string, unknown>).expiresAt,
-    },
   };
 }
 

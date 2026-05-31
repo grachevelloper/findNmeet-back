@@ -10,6 +10,7 @@ import (
 	"github.com/findnmeet/vk-gateway/internal/config"
 	"github.com/findnmeet/vk-gateway/internal/vkapi"
 	"github.com/findnmeet/vk-gateway/internal/vkgateway"
+	"github.com/findnmeet/vk-gateway/internal/vkmock"
 	"google.golang.org/grpc"
 )
 
@@ -33,6 +34,11 @@ func main() {
 		APIURL:     cfg.VKAPIURL,
 		Timeout:    cfg.HTTPTimeout,
 	})
+	var serviceClient vkgateway.VKClient = client
+	if cfg.UseMockVKSearch {
+		serviceClient = vkmock.NewDelegatingClient(client)
+		log.Printf("USE_MOCK_VK_SEARCH=true: vk-gateway SearchProfiles will use local mock catalog")
+	}
 
 	grpcListener, err := net.Listen("tcp", cfg.GRPCAddress)
 	if err != nil {
@@ -40,7 +46,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	vkgateway.RegisterVkGatewayServiceServer(grpcServer, vkgateway.NewService(client))
+	vkgateway.RegisterVkGatewayServiceServer(grpcServer, vkgateway.NewService(serviceClient))
 
 	go func() {
 		mux := http.NewServeMux()

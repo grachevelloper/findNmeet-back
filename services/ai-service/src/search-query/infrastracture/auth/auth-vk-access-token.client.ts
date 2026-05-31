@@ -1,7 +1,6 @@
 import { create } from '@bufbuild/protobuf';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 import { firstValueFrom, Observable } from 'rxjs';
 
 import {
@@ -11,6 +10,7 @@ import {
 } from '@findnmeet/ts-types/auth/v1';
 import { UuidSchema } from '@findnmeet/ts-types/shared/v1';
 import { CurrentUserVkAccessTokenProvider } from '../../application/abstractions/current-user-vk-access-token-provider';
+import { contractsProtoRoot } from '../grpc/contracts-proto-root';
 
 type AuthGrpcService = {
   getVkAccessToken(request: GetVkAccessTokenRequest): Observable<GetVkAccessTokenResponse>;
@@ -26,14 +26,16 @@ export class AuthVkAccessTokenClient
 
   constructor() {
     super();
+    const protoRoot = contractsProtoRoot(__dirname);
+
     this.client = ClientProxyFactory.create({
       transport: Transport.GRPC,
       options: {
         package: 'findnmeet.auth.v1',
-        protoPath: join(process.cwd(), 'contracts/proto/findnmeet/auth/v1/service.proto'),
+        protoPath: `${protoRoot}/findnmeet/auth/v1/service.proto`,
         url: process.env.AUTH_SERVICE_GRPC_URL ?? '127.0.0.1:50051',
         loader: {
-          includeDirs: [join(process.cwd(), 'contracts/proto')],
+          includeDirs: [protoRoot],
         },
       },
     }) as ClientGrpc;
@@ -44,6 +46,11 @@ export class AuthVkAccessTokenClient
   }
 
   async getByUserId(userId: string): Promise<string> {
+    const serviceToken = process.env.VK_SERVICE_TOKEN?.trim();
+    if (serviceToken) {
+      return serviceToken;
+    }
+
     const response = await firstValueFrom(
       this.service.getVkAccessToken(
         create(GetVkAccessTokenRequestSchema, {

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { AiSearchQueryParser } from '../../abstractions/ai-search-query-parser';
 import { ParseSearchQuery } from '../../contracts/ai.commands';
 import { randomUUID } from 'node:crypto';
@@ -15,6 +16,15 @@ function isWeakPrompt(query: string): boolean {
   return /^[\p{P}\p{S}\s]+$/u.test(query);
 }
 
+function baselineFilters(query: string) {
+  return {
+    query,
+    relation: VkRelationStatus.VK_RELATION_STATUS_UNSPECIFIED,
+    onlineOnly: false,
+  };
+}
+
+@Injectable()
 export class ParseSearchQueryUseCase {
   constructor(private readonly aiSearchQueryParser: AiSearchQueryParser) {}
 
@@ -29,16 +39,14 @@ export class ParseSearchQueryUseCase {
           id: randomUUID(),
           rawQuery: normalizedQuery,
           parsedAt: new Date(),
-          vkFilters: {
-            query: normalizedQuery,
-            relation: VkRelationStatus.VK_RELATION_STATUS_UNSPECIFIED,
-            onlineOnly: false,
-          },
+          vkFilters: baselineFilters(normalizedQuery),
         },
       };
     }
 
-    const vkFilters = await this.aiSearchQueryParser.parse(ownerId, query.query);
+    const vkFilters = await this.aiSearchQueryParser
+      .parse(ownerId, query.query)
+      .catch(() => baselineFilters(query.query));
 
     return {
       status: 'PARSED',

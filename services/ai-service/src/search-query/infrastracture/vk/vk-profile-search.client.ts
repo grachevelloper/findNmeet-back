@@ -1,7 +1,6 @@
 import { create } from '@bufbuild/protobuf';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 import { firstValueFrom, Observable } from 'rxjs';
 
 import type {
@@ -24,6 +23,7 @@ import { PageRequestSchema, SensitiveStringSchema } from '@findnmeet/ts-types/sh
 
 import { VkProfileSearcher } from '../../application/abstractions/vk-profile-searcher';
 import type { SearchPeopleResultProfile } from '../../application/contracts/search-people.result';
+import { contractsProtoRoot } from '../grpc/contracts-proto-root';
 
 type VkGatewayGrpcService = {
   searchProfiles(request: SearchProfilesRequest): Observable<SearchProfilesResponse>;
@@ -36,14 +36,16 @@ export class VkProfileSearchClient extends VkProfileSearcher implements OnModule
 
   constructor() {
     super();
+    const protoRoot = contractsProtoRoot(__dirname);
+
     this.client = ClientProxyFactory.create({
       transport: Transport.GRPC,
       options: {
         package: 'findnmeet.vk.v1',
-        protoPath: join(process.cwd(), 'contracts/proto/findnmeet/vk/v1/service.proto'),
+        protoPath: `${protoRoot}/findnmeet/vk/v1/service.proto`,
         url: process.env.VK_GATEWAY_GRPC_URL ?? '127.0.0.1:50054',
         loader: {
-          includeDirs: [join(process.cwd(), 'contracts/proto')],
+          includeDirs: [protoRoot],
         },
       },
     }) as ClientGrpc;
@@ -226,6 +228,17 @@ function vkRelationStatusToProto(
   }
 }
 
-function timestampToDate(timestamp: { seconds: bigint; nanos: number }): Date {
-  return new Date(Number(timestamp.seconds) * 1000 + Math.floor(timestamp.nanos / 1_000_000));
+function timestampToDate(timestamp: { seconds: bigint | number | string | { low: number; high: number; unsigned: boolean }; nanos: number }): Date {
+  return new Date(timestampSecondsToNumber(timestamp.seconds) * 1000 + Math.floor(timestamp.nanos / 1_000_000));
+}
+
+function timestampSecondsToNumber(seconds: bigint | number | string | { low: number; high: number; unsigned: boolean }): number {
+  if (typeof seconds === 'bigint' || typeof seconds === 'number') {
+    return Number(seconds);
+  }
+  if (typeof seconds === 'string') {
+    return Number(seconds);
+  }
+
+  return Number((BigInt(seconds.high) << 32n) + BigInt(seconds.low >>> 0));
 }

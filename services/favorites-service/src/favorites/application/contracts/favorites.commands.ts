@@ -1,9 +1,11 @@
 import type { FavoriteProvider } from '../../domain/models/favorite-provider';
+import type { VkProfileSnapshot } from '../../domain/models/favorite';
 
 export interface CreateFavoriteCommand {
   provider?: FavoriteProvider;
   externalId: string;
   note: string;
+  vkProfile?: VkProfileSnapshot;
 }
 
 export interface GetFavoriteQuery {
